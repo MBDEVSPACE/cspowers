@@ -742,7 +742,7 @@
 
   "skill_not_found_setskill": "No such CHATCOLORS.REDskill found",
   "player_not_found_setskill": "No such CHATCOLORS.REDplayer found",
-  "correct_form_setskill": "Correct usage: CHATCOLORS.RED!setskill <nickname> <skill>",
+  "correct_form_setskill": "Correct usage: CHATCOLORS.RED!setskill <nickname | @me | #userid> <skill>",
   "correct_form_setscore": "Correct usage: CHATCOLORS.RED!setscore <CT> <TT>",
   "done_setskill": "skill set",
   "error_setskill": "Failed to set CHATCOLORS.REDskill",
