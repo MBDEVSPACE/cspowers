@@ -1,6 +1,9 @@
 ﻿{
   "ConfigName": "Default",
   "PluginName": "TiredPowers",
+  "AdminOnlySkills": [
+    "GuidedBullet"
+  ],
   "GameMode": 3,
   "YourSkillChatInfo": true,
   "KillerSkillChatInfo": true,
@@ -146,7 +149,8 @@
     "WSADMenuControllsLineSize": "sm",
     "WSADMenuControllsLineColor1": "cyan",
     "WSADMenuControllsLineColor2": "white",
-    "WSADMenuControllsLineColor3": "green"
+    "WSADMenuControllsLineColor3": "green",
+    "VerticalOffsetLines": 3
   },
   "ChatMessage": {
     "MaxWidth": 1280.0,

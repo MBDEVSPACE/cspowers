@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using src.utils;
 using System.Collections.Concurrent;
@@ -53,38 +54,38 @@ namespace src.player.skills
             if (JumpBan.bannedPlayers.ContainsKey(player.Index)) return;
 
             var flags = (PlayerFlags)eventPlayerPawn.Flags;
-            var buttons = player.Buttons;
+            if (eventPlayerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_LADDER) || eventPlayerPawn.MoveType == MoveType_t.MOVETYPE_NONE) return;
 
-            if ((playerPawn.MovementServices?.QueuedButtonChangeMask & (ulong)PlayerButtons.Jump) != 0)
-                playersLastJump.AddOrUpdate(eventPlayer!.Index, Server.TickCount, (_, _) => Server.TickCount);
+            // No landing stamina penalty: the game would otherwise slow every hop and make the chain feel jerky.
+            var movement = playerPawn.MovementServices;
+            if (movement != null)
+                Schema.SetSchemaValue(movement.Handle, "CCSPlayer_MovementServices", "m_flStamina", 0f);
 
-            bool jumpPressed = buttons.HasFlag(PlayerButtons.Jump)
-                || (playersLastJump.TryGetValue(eventPlayer!.Index, out int tick) && tick + 20 >= Server.TickCount);
+            // Hold jump: as long as the key is down every landing turns straight into the next hop.
+            bool jumpHeld = (player.Buttons & PlayerButtons.Jump) != 0
+                || (movement?.Buttons?.ButtonStates[0] & (ulong)PlayerButtons.Jump) != 0;
+            if (!jumpHeld || !flags.HasFlag(PlayerFlags.FL_ONGROUND)) return;
 
-            if (jumpPressed && flags.HasFlag(PlayerFlags.FL_ONGROUND) && !eventPlayerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_LADDER))
-            {
-                eventPlayerPawn.AbsVelocity.Z = SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
-                var maxSpeed = SkillsInfo.GetValue<float>(skillName, "maxSpeed");
+            // Only once per landing: a new hop needs a tick in the air in between.
+            if (playersLastJump.TryGetValue(eventPlayer!.Index, out int lastTick) && lastTick + 2 >= Server.TickCount) return;
+            playersLastJump[eventPlayer.Index] = Server.TickCount;
 
-                var vX = eventPlayerPawn.AbsVelocity.X;
-                var vY = eventPlayerPawn.AbsVelocity.Y;
-                var speed2D = Math.Sqrt(vX * vX + vY * vY);
-                var scale = 1d;
+            float jumpVelocity = SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
+            float maxSpeed = SkillsInfo.GetValue<float>(skillName, "maxSpeed");
+            float boost = Math.Clamp(SkillsInfo.GetValue<float>(skillName, "jumpBoost"), 1f, 1.5f);
 
-                if (speed2D < maxSpeed)
-                {
-                    var newSpeed = Math.Min(speed2D * SkillsInfo.GetValue<float>(skillName, "jumpBoost"), maxSpeed);
-                    scale = newSpeed / (speed2D == 0 ? 1 : speed2D);
-                }
-                else if (speed2D > maxSpeed)
-                    scale = maxSpeed / speed2D;
+            float vX = eventPlayerPawn.AbsVelocity.X;
+            float vY = eventPlayerPawn.AbsVelocity.Y;
+            float speed2D = MathF.Sqrt(vX * vX + vY * vY);
 
-                eventPlayerPawn.AbsVelocity.X = (float)(vX * scale);
-                eventPlayerPawn.AbsVelocity.Y = (float)(vY * scale);
-            }
+            // Gentle gain per hop, capped: no sudden speed jumps, no hard stop at the cap.
+            float target = speed2D < 10f ? speed2D : Math.Min(speed2D * boost, Math.Max(maxSpeed, speed2D * 0.98f));
+            float scale = speed2D > 0f ? target / speed2D : 1f;
+
+            eventPlayerPawn.Teleport(null, null, new Vector(vX * scale, vY * scale, jumpVelocity));
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 500f, float jumpVelocity = 300f, float jumpBoost = 2f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 500f, float jumpVelocity = 300f, float jumpBoost = 1.08f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             public float MaxSpeed { get; set; } = maxSpeed;
             public float JumpVelocity { get; set; } = jumpVelocity;
