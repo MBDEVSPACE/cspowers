@@ -33,8 +33,8 @@ namespace src.utils
                 Instance.Logger.LogWarning(
                     "[jRandomSkills] Entity spawning is disabled (EntitySpawnSafety.Mode={Mode}, CS2 {Version}, CounterStrikeSharp {Css}, verified CS2 versions: {Verified}). " +
                     "Skills that spawn entities are not drawn and retakes auto-plant falls back to the planter placing the bomb with one click. " +
-                    "Hands-free auto-plant needs a CounterStrikeSharp built for this CS2 version: update CounterStrikeSharp, then add \"{Version}\" to EntitySpawnSafety.VerifiedGameVersions or set Mode to \"Off\".",
-                    settings.Mode, GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown", string.Join(", ", settings.VerifiedGameVersions));
+                    "Hands-free auto-plant needs a CounterStrikeSharp built for this CS2 version: update CounterStrikeSharp, then add \"{VersionToAdd}\" to EntitySpawnSafety.VerifiedGameVersions or set Mode to \"Off\".",
+                    settings.Mode, GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown", string.Join(", ", settings.VerifiedGameVersions), GameVersion ?? "unknown");
         }
 
         // CS2 build each CounterStrikeSharp release was made for (from its release notes). A newer CS2 hotfix
