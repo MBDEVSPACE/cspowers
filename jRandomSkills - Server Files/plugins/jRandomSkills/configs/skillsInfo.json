@@ -232,7 +232,8 @@
     "RequiredPermission": "",
     "MaxPerServer": -1,
     "MinPlayer": 0,
-    "Rarity": "Common"
+    "Rarity": "Common",
+    "Height": 12.0
   },
   {
     "Weight": 1.0,
@@ -1338,7 +1339,7 @@
   },
   {
     "FlashDuration": 1.0,
-    "FriendlyFire": true,
+    "FriendlyFire": false,
     "GrenadeLimit": 1,
     "Weight": 1.0,
     "NeedsTeammates": false,
@@ -1353,7 +1354,8 @@
     "RequiredPermission": "",
     "MaxPerServer": 1,
     "MinPlayer": 0,
-    "Rarity": "Epic"
+    "Rarity": "Epic",
+    "KillSelf": false
   },
   {
     "HealthToAdd": 3,
@@ -2495,7 +2497,7 @@
   {
     "MaxSpeed": 500.0,
     "JumpVelocity": 300.0,
-    "JumpBoost": 2.0,
+    "JumpBoost": 1.08,
     "Weight": 1.0,
     "NeedsTeammates": false,
     "DisableOnFreezeTime": false,

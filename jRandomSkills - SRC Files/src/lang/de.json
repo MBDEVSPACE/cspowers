@@ -332,7 +332,7 @@
   "jumpingjack_desc": "Durch Springen wird die Gesundheit wiederhergestellt",
 
   "killerflash": "Killer Flash",
-  "killerflash_desc": "Jeder, der durch deine Blendgranate vollständig geblendet wird, stirbt (einschließlich dir selbst)",
+  "killerflash_desc": "Gegner, die dein Flashbang voll blendet, sterben",
 
   "knockback": "Rückstoß",
   "knockback_desc": "Schießen in der Luft stößt dich nach hinten",

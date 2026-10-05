@@ -325,7 +325,7 @@
   "jumpingjack_desc": "Jumping restores health",
 
   "killerflash": "Killer Flash",
-  "killerflash_desc": "Anyone fully blinded by your flashbang dies (including you)",
+  "killerflash_desc": "Enemies fully blinded by your flashbang die",
 
   "knockback": "Knockback",
   "knockback_desc": "Firing while airborne pushes you backwards",

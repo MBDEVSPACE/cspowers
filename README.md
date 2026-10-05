@@ -170,7 +170,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so comb
 | Jetkick           | Select a player to jetkick                                                                         | -                |
 | Jump Curse        | A chosen enemy jumps whenever one of their teammates jumps                                         | -                |
 | Jumping Jack      | Jumping restores health                                                                            | -                |
-| Killer Flash      | Anyone fully blinded by your flashbang dies (including you)                                        | -                |
+| Killer Flash      | Enemies fully blinded by your flashbang die                                                         | -                |
 | Knockback         | Firing while airborne pushes you backwards                                                         | -                |
 | Last Gasp         | After you die, you deal damage to the enemy who killed you                                         | 30 HP            |
 | Legless           | Choose a player who cannot jump                                                                    | -                |
