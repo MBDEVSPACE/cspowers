@@ -303,6 +303,7 @@ namespace src.utils
                     WSADMenuControllsLineColor1 = "cyan",
                     WSADMenuControllsLineColor2 = "white",
                     WSADMenuControllsLineColor3 = "green",
+                    VerticalOffsetLines = 3,
                 };
 
                 ChatMessage = new ChatMessage
@@ -538,6 +539,8 @@ namespace src.utils
             public required string WSADMenuControllsLineColor1 { get; set; }
             public required string WSADMenuControllsLineColor2 { get; set; }
             public required string WSADMenuControllsLineColor3 { get; set; }
+            // Empty lines appended under the skill HUD; each one lifts the whole box a little (0 = game default position).
+            public int VerticalOffsetLines { get; set; } = 3;
         }
 
         public class LanguageSystem

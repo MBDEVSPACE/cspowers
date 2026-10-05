@@ -972,7 +972,12 @@ namespace src.player
                     ? ""
                     : $"<br>{emptySymbol}<font class='fontSize-{extraLineSize}' color='{(isDescription ? config.SkillDescriptionLineColor : config.InfoLineColor)}'>{extraLine}</font>{emptySymbol}";
 
-                var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine;
+                // The centre HTML box is anchored at its bottom: every empty line appended below the text lifts it.
+                string lift = config.VerticalOffsetLines > 0
+                    ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", config.VerticalOffsetLines))
+                    : "";
+
+                var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + lift;
 
                 if (skillPlayer != null)
                 {
