@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using jRandomSkills.src.utils;
 using src.utils;
@@ -158,11 +157,13 @@ namespace src.player.skills
             info.Position = start;
             info.Direction = SkillUtils.GetForwardVector(angles);
             info.StartTick = Server.TickCount;
+            info.ShooterOrigin = new Vector(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z);
 
             pawn.CameraServices.ViewEntity.Raw = camera.EntityHandle.Raw;
             Utilities.SetStateChanged(pawn, "CBasePlayerPawn", "m_pCameraServices");
 
-            Freeze(pawn, true);
+            // The shooter is held in place every tick instead of a MoveType freeze: with MOVETYPE_NONE the game
+            // stops updating the pawn's view angles, which is what steers the bullet.
             BlockWeapon(player, true);
         }
 
@@ -208,8 +209,15 @@ namespace src.player.skills
                     continue;
                 }
 
+                // Hold the shooter still (WASD does nothing) while the view is on the camera.
+                if (pawn.AbsOrigin != null && SkillUtils.GetDistance(pawn.AbsOrigin, info.ShooterOrigin) > 1.0)
+                    pawn.Teleport(info.ShooterOrigin, null, new Vector(0, 0, 0));
+                else
+                    pawn.Teleport(null, null, new Vector(0, 0, 0));
+
                 // Steer towards where the player looks; the mouse keeps turning the pawn while the view is on the camera.
-                Vector look = SkillUtils.GetForwardVector(pawn.EyeAngles);
+                QAngle view = new(pawn.V_angle.X, pawn.V_angle.Y, 0);
+                Vector look = SkillUtils.GetForwardVector(view);
                 Vector dir = new(
                     info.Direction.X + (look.X - info.Direction.X) * turn,
                     info.Direction.Y + (look.Y - info.Direction.Y) * turn,
@@ -239,7 +247,7 @@ namespace src.player.skills
                 }
 
                 info.Position = next;
-                camera.Teleport(next, new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, 0));
+                camera.Teleport(next, view);
 
                 if (SkillUtils.IsHudFrame())
                 {
@@ -302,7 +310,6 @@ namespace src.player.skills
                         pawn.CameraServices.ViewEntity.Raw = info.OriginalView;
                         Utilities.SetStateChanged(pawn, "CBasePlayerPawn", "m_pCameraServices");
                     }
-                    Freeze(pawn, false);
                 }
                 BlockWeapon(player, false);
                 SkillUtils.ResetPrintHTML(player);
@@ -311,15 +318,6 @@ namespace src.player.skills
             info.OriginalView = 0;
             if (startCooldown)
                 info.NextShotTick = Server.TickCount + (int)(SkillsInfo.GetValue<float>(skillName, "cooldown") * 64);
-        }
-
-        private static void Freeze(CCSPlayerPawn pawn, bool freeze)
-        {
-            pawn.MoveType = freeze ? MoveType_t.MOVETYPE_NONE : MoveType_t.MOVETYPE_WALK;
-            Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", freeze ? 0 : 2);
-            Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
-            if (freeze)
-                pawn.Teleport(null, null, new Vector(0, 0, 0));
         }
 
         private static void BlockWeapon(CCSPlayerController player, bool block)
@@ -346,6 +344,7 @@ namespace src.player.skills
             public uint OriginalView { get; set; }
             public Vector Position { get; set; } = new(0, 0, 0);
             public Vector Direction { get; set; } = new(1, 0, 0);
+            public Vector ShooterOrigin { get; set; } = new(0, 0, 0);
             public int StartTick { get; set; }
             public int NextShotTick { get; set; }
             public int SuppressUntilTick { get; set; } = -1;
