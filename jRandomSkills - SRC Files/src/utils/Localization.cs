@@ -295,7 +295,7 @@ namespace src.utils
                 // unloading) or the .mmdb can be corrupt; fall back to the default language and stop
                 // trying for the rest of the session instead of throwing every HUD tick.
                 _geoLiteBroken = true;
-                Server.PrintToConsole($"[jRandomSkills] GeoLite lookup disabled for this session: {ex.GetType().Name}: {ex.Message}");
+                Server.PrintToConsole($"[TiredPowers] GeoLite lookup disabled for this session: {ex.GetType().Name}: {ex.Message}");
                 geoliteLandCode = defaultLangCode;
             }
 
@@ -374,7 +374,7 @@ namespace src.utils
             }
             catch
             {
-                Server.PrintToConsole($"[jRandomSkills] {playersLanguageFileName} could not be parsed, starting empty.");
+                Server.PrintToConsole($"[TiredPowers] {playersLanguageFileName} could not be parsed, starting empty.");
                 return;
             }
 
@@ -382,7 +382,7 @@ namespace src.utils
 
             if (legacyFormat)
             {
-                Server.PrintToConsole($"[jRandomSkills] {playersLanguageFileName} converted to the grouped format ({_playersLanguage.Count} players).");
+                Server.PrintToConsole($"[TiredPowers] {playersLanguageFileName} converted to the grouped format ({_playersLanguage.Count} players).");
                 SavePlayersLanguage();
             }
             else

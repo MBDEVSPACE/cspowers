@@ -32,7 +32,7 @@ namespace src.utils
                 if (!traceFailureLogged)
                 {
                     traceFailureLogged = true;
-                    Server.PrintToConsole($"[jRandomSkills] Native trace failed: {ex.Message}");
+                    Server.PrintToConsole($"[TiredPowers] Native trace failed: {ex.Message}");
                 }
                 return false;
             }

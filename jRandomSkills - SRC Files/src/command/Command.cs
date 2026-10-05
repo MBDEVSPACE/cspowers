@@ -101,13 +101,32 @@ namespace src.command
         }
 
         [CommandHelper(minArgs: 0, whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        // Target for admin commands: @me, #userid, SteamID64, exact name, or a unique part of a name.
+        public static CCSPlayerController? FindTargetPlayer(CCSPlayerController? caller, string arg)
+        {
+            if (string.IsNullOrWhiteSpace(arg)) return null;
+            arg = arg.Trim();
+
+            if (arg.Equals("@me", StringComparison.OrdinalIgnoreCase) || arg.Equals("me", StringComparison.OrdinalIgnoreCase))
+                return caller != null && caller.IsValid ? caller : null;
+
+            var players = Utilities.GetPlayers().Where(p => p != null && p.IsValid).ToList();
+
+            if (arg.StartsWith('#') && int.TryParse(arg[1..], out int userId))
+                return players.FirstOrDefault(p => p.UserId == userId);
+
+            var exact = players.FirstOrDefault(p => p.SteamID.ToString() == arg || p.PlayerName.Equals(arg, StringComparison.OrdinalIgnoreCase));
+            if (exact != null) return exact;
+
+            var partial = players.Where(p => p.PlayerName.Contains(arg, StringComparison.OrdinalIgnoreCase)).ToList();
+            return partial.Count == 1 ? partial[0] : null;
+        }
+
         private static void Command_SetSkill(CCSPlayerController? player, CommandInfo command)
         {
             Debug.WriteToDebug($"Player {player?.PlayerName} used the css_setskill {command.ArgString} command.");
             if (!string.IsNullOrEmpty(config.NormalCommands.SetSkillCommand.Permissions) && !AdminManager.PlayerHasPermissions(player, config.NormalCommands.SetSkillCommand.Permissions)) return;
-            var targetPlayer = Utilities.GetPlayers().FirstOrDefault(p => p != null && p.IsValid
-                                                                          && (p.SteamID.ToString().Equals(command.GetArg(1), StringComparison.CurrentCultureIgnoreCase)
-                                                                          || p.PlayerName.Equals(command.GetArg(1), StringComparison.OrdinalIgnoreCase)));
+            var targetPlayer = FindTargetPlayer(player, command.GetArg(1));
 
             if (command.ArgCount < 2)
             {
@@ -507,9 +526,7 @@ namespace src.command
         {
             Debug.WriteToDebug($"Player {player?.PlayerName} used the css_setstaticskill {command.ArgString} command.");
             if (!string.IsNullOrEmpty(config.NormalCommands.SetStaticSkillCommand.Permissions) && !AdminManager.PlayerHasPermissions(player, config.NormalCommands.SetStaticSkillCommand.Permissions)) return;
-            var targetPlayer = Utilities.GetPlayers().FirstOrDefault(p => p != null && p.IsValid
-                                                                          && (p.SteamID.ToString().Equals(command.GetArg(1), StringComparison.CurrentCultureIgnoreCase)
-                                                                          || p.PlayerName.Equals(command.GetArg(1), StringComparison.OrdinalIgnoreCase)));
+            var targetPlayer = FindTargetPlayer(player, command.GetArg(1));
 
             if (command.ArgCount < 2)
             {

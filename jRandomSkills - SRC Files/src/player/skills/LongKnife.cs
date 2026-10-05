@@ -25,7 +25,7 @@ namespace src.player.skills
         private static MemoryFunctionVoid<IntPtr, short>? ResolveShootSecondary()
         {
             try { return new(GameData.GetSignature("Shoot_Secondary")); }
-            catch (Exception ex) { Server.PrintToConsole($"[jRandomSkills] Shoot_Secondary signature unresolved: {ex.Message}"); return null; }
+            catch (Exception ex) { Server.PrintToConsole($"[TiredPowers] Shoot_Secondary signature unresolved: {ex.Message}"); return null; }
         }
 
         public static void LoadSkill()

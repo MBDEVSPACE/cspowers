@@ -89,7 +89,7 @@ namespace src.modules
                 }
                 catch (Exception ex)
                 {
-                    Instance.Logger.LogError("[jRandomSkills] Could not read guns.json: {Message}", ex.Message);
+                    Instance.Logger.LogError("[TiredPowers] Could not read guns.json: {Message}", ex.Message);
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace src.modules
                 }
                 catch (Exception ex)
                 {
-                    Instance.Logger.LogError("[jRandomSkills] Could not save guns.json: {Message}", ex.Message);
+                    Instance.Logger.LogError("[TiredPowers] Could not save guns.json: {Message}", ex.Message);
                 }
             }
         }
@@ -283,7 +283,7 @@ namespace src.modules
                 {
                     // Library missing or incompatible on this server: use the built-in menu from now on.
                     cs2MenuManagerBroken = true;
-                    Instance.Logger.LogWarning("[jRandomSkills] CS2MenuManager is not available ({Message}); the !guns menu uses the built-in WASD menu instead. Install CS2MenuManager or set Modules.Guns.MenuStyle to \"Wasd\".", (ex.InnerException ?? ex).Message);
+                    Instance.Logger.LogWarning("[TiredPowers] CS2MenuManager is not available ({Message}); the !guns menu uses the built-in WASD menu instead. Install CS2MenuManager or set Modules.Guns.MenuStyle to \"Wasd\".", (ex.InnerException ?? ex).Message);
                 }
             }
 

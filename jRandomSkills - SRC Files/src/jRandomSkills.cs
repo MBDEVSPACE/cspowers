@@ -32,7 +32,7 @@ namespace src
         public static readonly ConcurrentDictionary<string, byte> ActiveSkillsThisRound = new();
         public static readonly ConcurrentDictionary<string, byte> SkillsUsedThisMap = new();
 
-        public override string ModuleName => "[CS2] [ jRandomSkills ]";
+        public override string ModuleName => "[CS2] [ TiredPowers ]";
         public override string ModuleAuthor => "D3X (Original), Juzlus (Modifier), ByDexterTR (Contributor)";
         public override string ModuleDescription => "Plugin adds random skills every round for CS2 by D3X. Modified by Juzlus.";
         public override string ModuleVersion => "1.2.4.b3";
@@ -84,10 +84,10 @@ namespace src
             {
                 Retakes = new RetakesPlugin.RetakesPlugin(this);
                 Retakes.Load(hotReload);
-                Logger.LogInformation("[jRandomSkills] Retakes module loaded (players spawn on the retakes site spawns; set Modules.Retakes.Enabled=false in config.json to turn it off).");
+                Logger.LogInformation("[TiredPowers] Retakes module loaded (players spawn on the retakes site spawns; set Modules.Retakes.Enabled=false in config.json to turn it off).");
             }
             else
-                Logger.LogWarning("[jRandomSkills] Retakes module is OFF (Modules.Retakes.Enabled=false in config.json): players use the map's normal spawns and no bomb is planted.");
+                Logger.LogWarning("[TiredPowers] Retakes module is OFF (Modules.Retakes.Enabled=false in config.json): players use the map's normal spawns and no bomb is planted.");
 
             if (modules.Guns.Enabled)
                 GunsModule.Load();

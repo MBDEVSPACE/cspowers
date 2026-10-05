@@ -51,7 +51,7 @@ namespace src.utils
             new(() =>
             {
                 try { return factory(GameData.GetSignature(name)); }
-                catch (Exception ex) { Server.PrintToConsole($"[jRandomSkills] gamedata signature '{name}' could not be resolved: {ex.Message}"); return null; }
+                catch (Exception ex) { Server.PrintToConsole($"[TiredPowers] gamedata signature '{name}' could not be resolved: {ex.Message}"); return null; }
             });
 
         private static readonly Lazy<MemoryFunctionWithReturn<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, int>?> HEGrenadeProjectile_CreateFunc =
@@ -73,7 +73,7 @@ namespace src.utils
             var config = Config.LoadedConfig.ChatMessage;
             float maxWidth = config.MaxWidth;
             char symbol = config.LineSymbol;
-            if (string.IsNullOrEmpty(title)) title = player.GetTranslation("jRandomSkills");
+            if (string.IsNullOrEmpty(title)) title = string.IsNullOrWhiteSpace(Config.LoadedConfig.PluginName) ? "TiredPowers" : Config.LoadedConfig.PluginName;
 
             if (!ignoreIlliterate && Illiterate.CheckIlliterateSkill(player))
                 msg = Illiterate.GetRandomText(msg);
