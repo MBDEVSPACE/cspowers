@@ -68,7 +68,7 @@ namespace src.utils
                 if (s == null || s.Skill == Skills.None || IsSolo(s.Skill)) continue;
                 string name = SkillNames.Get(s.Skill);
                 if (excluded != null && excluded.Contains(name)) continue;
-                if (IsSkillBlockedByMode(s.Skill)) continue;
+                if (IsSkillBlockedByMode(s.Skill) || IsAdminOnlySkill(s.Skill)) continue;
 
                 var def = SkillsInfo.GetSkillConfig(s.Skill);
                 if (def == null || !def.Active) continue;

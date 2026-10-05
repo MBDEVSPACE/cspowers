@@ -101,6 +101,12 @@ namespace src
 
         // Skills that don't work in the retakes mode (buying, carrying/planting the bomb, normal spawns),
         // and retakes-only skills while it is off.
+        // Loaded and usable through css_setskill, but never part of the round draw.
+        public static bool IsAdminOnlySkill(Skills skill)
+        {
+            return Config.LoadedConfig.AdminOnlySkills.Contains(SkillNames.Get(skill), StringComparer.OrdinalIgnoreCase);
+        }
+
         public static bool IsSkillBlockedByMode(Skills skill)
         {
             if (Event.IsSkillMissingHooks(skill) || EntitySafety.IsSkillBlocked(skill))

@@ -3239,7 +3239,7 @@
     "DisableOnPistolRound": false,
     "OnlyTeam": 0,
     "Color": "#ff4fd8",
-    "Active": false,
+    "Active": true,
     "Name": "GuidedBullet",
     "HudDuration": null,
     "DescriptionHudDuration": null,

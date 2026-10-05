@@ -191,6 +191,9 @@ namespace src.utils
             public ServerInfoSettings ServerInfo { get; set; }
             // Name shown in the chat tag line and the plugin list.
             public string PluginName { get; set; } = "TiredPowers";
+            // Skills that are loaded but never drawn; admins hand them out with css_setskill (test skills).
+            [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> AdminOnlySkills { get; set; } = ["GuidedBullet"];
 
             public SettingsModel()
             {
