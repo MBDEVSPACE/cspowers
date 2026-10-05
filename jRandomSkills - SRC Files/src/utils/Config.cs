@@ -470,6 +470,8 @@ namespace src.utils
             public bool Enabled { get; set; } = true;
             // Skills that rely on buying, carrying/planting the bomb or on normal spawns are left out of the draw while retakes runs.
             public bool DisableIncompatibleSkills { get; set; } = true;
+            // Keep the game's "The bomb has been planted" banner off the players' screens (it covers the skill HUD).
+            public bool HideBombPlantedAlert { get; set; } = true;
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> IncompatibleSkills { get; set; } =
             [

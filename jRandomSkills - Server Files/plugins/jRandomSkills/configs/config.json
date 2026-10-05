@@ -368,6 +368,7 @@
     "Retakes": {
       "Enabled": true,
       "DisableIncompatibleSkills": true,
+      "HideBombPlantedAlert": true,
       "IncompatibleSkills": [
         "AreaReaper",
         "Bankrupt",

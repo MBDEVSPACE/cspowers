@@ -80,7 +80,13 @@ namespace src.player.skills
                     if (cam == null || !cam.IsValid || cam.AbsOrigin == null || cam.AbsRotation == null) continue;
 
                     // Camera sits behind and slightly above the head, pulled in when a wall is in the way so it never clips.
-                    Vector eye = new(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z + SkillsInfo.GetValue<float>(skillName, "height"));
+                    // OnTick runs before this tick's movement, so the camera is placed where the player will be
+                    // one tick later; without that it trails the player and the view judders while moving.
+                    Vector predicted = new(
+                        pawn.AbsOrigin.X + pawn.AbsVelocity.X / 64f,
+                        pawn.AbsOrigin.Y + pawn.AbsVelocity.Y / 64f,
+                        pawn.AbsOrigin.Z + pawn.AbsVelocity.Z / 64f);
+                    Vector eye = new(predicted.X, predicted.Y, predicted.Z + pawn.ViewOffset.Z + SkillsInfo.GetValue<float>(skillName, "height"));
                     Vector back = SkillUtils.GetForwardVector(pawn.V_angle) * -SkillsInfo.GetValue<float>(skillName, "distance");
                     Vector wanted = eye + back;
 

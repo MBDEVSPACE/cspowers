@@ -976,12 +976,17 @@ namespace src.player
                     : $"<br>{emptySymbol}<font class='fontSize-{extraLineSize}' color='{(isDescription ? config.SkillDescriptionLineColor : config.InfoLineColor)}'>{extraLine}</font>{emptySymbol}";
 
                 // The centre HTML box is anchored at its bottom: every empty line appended below the text lifts it.
-                string lift = config.VerticalOffsetLines > 0
-                    ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", config.VerticalOffsetLines))
-                    : "";
-
                 // The notice is ready-made HTML (see SkillUtils.NoticeHtml).
                 string noticeLine = string.IsNullOrWhiteSpace(notice) ? "" : $"<br>{emptySymbol2}{notice}{emptySymbol2}";
+
+                // The box has a limited height: with extra lines (two skills, a notice) fewer lift lines are added
+                // so the top of the text is never pushed out of view.
+                int extraLines = Math.Max(0, (infoLine + skillLine + remainingLine + noticeLine).Split("<br>").Length - 3);
+                int liftLines = Math.Max(0, config.VerticalOffsetLines - extraLines);
+                string lift = liftLines > 0
+                    ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", liftLines))
+                    : "";
+
 
                 var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + noticeLine + lift;
 
