@@ -1,5 +1,6 @@
 ﻿{
   "ConfigName": "Default",
+  "PluginName": "TiredPowers",
   "GameMode": 3,
   "YourSkillChatInfo": true,
   "KillerSkillChatInfo": true,

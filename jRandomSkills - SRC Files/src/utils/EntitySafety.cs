@@ -27,11 +27,11 @@ namespace src.utils
             };
 
             if (!SpawningBlocked)
-                Instance.Logger.LogInformation("[jRandomSkills] Entity spawning enabled (CS2 {Version}, CounterStrikeSharp {Css}).", GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown");
+                Instance.Logger.LogInformation("[TiredPowers] Entity spawning enabled (CS2 {Version}, CounterStrikeSharp {Css}).", GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown");
 
             if (SpawningBlocked)
                 Instance.Logger.LogWarning(
-                    "[jRandomSkills] Entity spawning is disabled (EntitySpawnSafety.Mode={Mode}, CS2 {Version}, CounterStrikeSharp {Css}, verified CS2 versions: {Verified}). " +
+                    "[TiredPowers] Entity spawning is disabled (EntitySpawnSafety.Mode={Mode}, CS2 {Version}, CounterStrikeSharp {Css}, verified CS2 versions: {Verified}). " +
                     "Skills that spawn entities are not drawn and retakes auto-plant falls back to the planter placing the bomb with one click. " +
                     "Hands-free auto-plant needs a CounterStrikeSharp built for this CS2 version: update CounterStrikeSharp, then add \"{VersionToAdd}\" to EntitySpawnSafety.VerifiedGameVersions or set Mode to \"Off\".",
                     settings.Mode, GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown", string.Join(", ", settings.VerifiedGameVersions), GameVersion ?? "unknown");
@@ -89,7 +89,7 @@ namespace src.utils
             }
             catch (Exception ex)
             {
-                Instance.Logger.LogError("[jRandomSkills] Could not read the CS2 version: {Message}", ex.Message);
+                Instance.Logger.LogError("[TiredPowers] Could not read the CS2 version: {Message}", ex.Message);
             }
 
             return null;

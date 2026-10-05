@@ -37,7 +37,7 @@ namespace src.player.skills
                 }
                 catch (Exception ex)
                 {
-                    Server.PrintToConsole($"[jRandomSkills] TakeAmmo could not restore ammo for {kvp.Value.Item2}: {ex.Message}");
+                    Server.PrintToConsole($"[TiredPowers] TakeAmmo could not restore ammo for {kvp.Value.Item2}: {ex.Message}");
                 }
             }
             OriginalWeaponMaxAmmo.Clear();

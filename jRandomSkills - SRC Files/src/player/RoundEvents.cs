@@ -215,7 +215,7 @@ namespace src.player
             }
             catch (Exception ex)
             {
-                Server.PrintToConsole($"[jRandomSkills] {skillName}.NewRound failed, cleanup continues: {(ex.InnerException ?? ex).Message}");
+                Server.PrintToConsole($"[TiredPowers] {skillName}.NewRound failed, cleanup continues: {(ex.InnerException ?? ex).Message}");
             }
         }
 

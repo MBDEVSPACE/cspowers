@@ -189,6 +189,8 @@ namespace src.utils
             public EntitySpawnSafetySettings EntitySpawnSafety { get; set; }
             public CombosSettings Combos { get; set; }
             public ServerInfoSettings ServerInfo { get; set; }
+            // Name shown in the chat tag line and the plugin list.
+            public string PluginName { get; set; } = "TiredPowers";
 
             public SettingsModel()
             {

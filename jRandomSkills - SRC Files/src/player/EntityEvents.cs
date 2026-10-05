@@ -238,7 +238,7 @@ namespace src.player
                 }
                 catch (Exception ex)
                 {
-                    Server.PrintToConsole($"[jRandomSkills] CheckTransmit dying-filter failed: {ex.Message}");
+                    Server.PrintToConsole($"[TiredPowers] CheckTransmit dying-filter failed: {ex.Message}");
                 }
 
                 DispatchCheckTransmit([infoList]);

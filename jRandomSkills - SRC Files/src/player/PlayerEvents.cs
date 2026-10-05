@@ -99,7 +99,7 @@ namespace src.player
 
             var unavailable = Enum.GetValues<Skills>().Where(IsSkillMissingHooks).ToArray();
             if (unavailable.Length > 0)
-                Instance.Logger.LogWarning("[jRandomSkills] Some CounterStrikeSharp hooks are unavailable (update CounterStrikeSharp to match the current CS2 build). These skills are disabled until then: {Skills}", string.Join(", ", unavailable));
+                Instance.Logger.LogWarning("[TiredPowers] Some CounterStrikeSharp hooks are unavailable (update CounterStrikeSharp to match the current CS2 build). These skills are disabled until then: {Skills}", string.Join(", ", unavailable));
 
             // Disabled after CS2 updates started crashing Linux servers on player join.
             // The hooked native signature is only used to block weapon drops for Iana clones.
@@ -142,7 +142,7 @@ namespace src.player
             }
             catch (Exception ex)
             {
-                Instance.Logger.LogError("[jRandomSkills] Could not hook {Name}: {Message}", name, ex.Message);
+                Instance.Logger.LogError("[TiredPowers] Could not hook {Name}: {Message}", name, ex.Message);
                 return false;
             }
         }
@@ -150,7 +150,7 @@ namespace src.player
         private static void TryUnhook(Action unhook)
         {
             try { unhook(); }
-            catch (Exception ex) { Server.PrintToConsole($"[jRandomSkills] unhook failed: {ex.Message}"); }
+            catch (Exception ex) { Server.PrintToConsole($"[TiredPowers] unhook failed: {ex.Message}"); }
         }
 
         private static readonly Skills[] lateDamageSkills = [Skills.SecondLife, Skills.Phoenix, Skills.ReZombie];
@@ -165,7 +165,7 @@ namespace src.player
             }
             catch (Exception ex)
             {
-                Server.PrintToConsole($"[jRandomSkills] {skill}.{methodName} failed: {ex.InnerException?.Message ?? ex.Message}");
+                Server.PrintToConsole($"[TiredPowers] {skill}.{methodName} failed: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -218,7 +218,7 @@ namespace src.player
                 }
                 catch (Exception ex)
                 {
-                    Server.PrintToConsole($"[jRandomSkills] {curserSkill}.DisableSkill failed while releasing curse on leaving player: {(ex.InnerException ?? ex).Message}");
+                    Server.PrintToConsole($"[TiredPowers] {curserSkill}.DisableSkill failed while releasing curse on leaving player: {(ex.InnerException ?? ex).Message}");
                 }
             }
         }
@@ -601,7 +601,7 @@ namespace src.player
                         // Without this one throwing skill cancels every later skill's tick, every frame.
                         // Logged once per skill per round; at 64 ticks a repeat would flood the console.
                         if (tickFailuresLogged.Add(skill))
-                            Server.PrintToConsole($"[jRandomSkills] {skill}.OnTick failed: {ex.InnerException?.Message ?? ex.Message}");
+                            Server.PrintToConsole($"[TiredPowers] {skill}.OnTick failed: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
             }
