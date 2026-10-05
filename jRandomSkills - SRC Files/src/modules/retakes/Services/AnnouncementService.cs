@@ -73,9 +73,11 @@ public class AnnouncementService
         var announcementMessage = _plugin.Localizer["retakes.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
         var centerAnnouncementMessage = _plugin.Localizer["retakes.center.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
 
-        // jRandomSkills draws its skill HUD in the center of the screen every tick, which hides
-        // PrintToCenter text, so the on-screen announcement uses the alert box instead.
+        // The skill HUD owns the centre of the screen, so the call is drawn inside that box under the skill:
+        // a big site letter with the T/CT count underneath.
         var centerText = StripColors(centerAnnouncementMessage);
+        string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
+        var centerHtml = src.utils.SkillUtils.NoticeHtml(bombsite.ToString(), centerText, siteColor);
 
         foreach (var player in Utilities.GetPlayers())
         {
@@ -85,7 +87,7 @@ public class AnnouncementService
 
                 if (_centerEnabled)
                 {
-                    player.PrintToCenterAlert(centerText);
+                    src.utils.SkillUtils.ShowCenterNotice(player, centerHtml, centerText, 6f);
                 }
 
                 if (_voicesEnabled && !_hasMutedVoices.Contains(player))
@@ -102,7 +104,7 @@ public class AnnouncementService
                 continue;
             }
 
-            player.PrintToCenterAlert(centerText);
+            src.utils.SkillUtils.ShowCenterNotice(player, centerHtml, centerText, 6f);
         }
 
         Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT)");

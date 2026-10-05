@@ -944,6 +944,8 @@ namespace src.player
 
                 var config = Config.LoadedConfig.HtmlHudCustomisation;
 
+                string? notice = skillPlayer != null && skillPlayer.CenterNoticeUntil > DateTime.Now ? skillPlayer.CenterNotice : null;
+
                 var cache = skillPlayer?.HudCache;
                 if (cache != null
                     && cache.Content != null
@@ -952,7 +954,8 @@ namespace src.player
                     && cache.IsDescription == isDescription
                     && string.Equals(cache.Header, headerLine, StringComparison.Ordinal)
                     && string.Equals(cache.Center, centerLine, StringComparison.Ordinal)
-                    && string.Equals(cache.Extra, extraLine, StringComparison.Ordinal))
+                    && string.Equals(cache.Extra, extraLine, StringComparison.Ordinal)
+                    && string.Equals(cache.Notice, notice, StringComparison.Ordinal))
                 {
                     player.PrintToCenterHtml(cache.Content);
                     return;
@@ -977,7 +980,10 @@ namespace src.player
                     ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", config.VerticalOffsetLines))
                     : "";
 
-                var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + lift;
+                // The notice is ready-made HTML (see SkillUtils.NoticeHtml).
+                string noticeLine = string.IsNullOrWhiteSpace(notice) ? "" : $"<br>{emptySymbol2}{notice}{emptySymbol2}";
+
+                var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + noticeLine + lift;
 
                 if (skillPlayer != null)
                 {
@@ -987,6 +993,7 @@ namespace src.player
                     cache.Header = headerLine;
                     cache.Center = centerLine;
                     cache.Extra = extraLine;
+                    cache.Notice = notice;
                     cache.IsDescription = isDescription;
                     cache.Content = hudContent;
                 }

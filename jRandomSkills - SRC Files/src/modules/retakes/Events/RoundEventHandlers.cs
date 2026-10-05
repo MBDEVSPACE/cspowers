@@ -260,7 +260,8 @@ public class RoundEventHandlers
         if (!_isAutoPlantEnabled && _planter != null && PlayerHelper.IsValid(_planter))
         {
             // Auto-plant is unavailable on this server build: the planter has the bomb and plants it by hand.
-            _planter.PrintToCenterAlert(AnnouncementService.StripColors(_plugin.Localizer["retakes.plant_now"]));
+            var plantText = AnnouncementService.StripColors(_plugin.Localizer["retakes.plant_now"]);
+            src.utils.SkillUtils.ShowCenterNotice(_planter, src.utils.SkillUtils.NoticeHtml(plantText), plantText, 8f);
             _planter.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {_plugin.Localizer["retakes.plant_now"]}");
         }
 

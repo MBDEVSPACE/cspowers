@@ -151,16 +151,32 @@ namespace src.command
             }
 
             var skillName = command.ArgCount > 3 ? $"{command.GetArg(2)} {command.GetArg(3)}" : command.GetArg(2);
-            var skill = SkillData.Skills.FirstOrDefault(s => !IsSkillBlockedByMode(s.Skill) && (player != null && player.GetSkillName(s.Skill).Equals(skillName, StringComparison.OrdinalIgnoreCase) || s.Skill.ToString().Equals(skillName, StringComparison.OrdinalIgnoreCase)));
+            var skill = SkillData.Skills.FirstOrDefault(s => player != null && player.GetSkillName(s.Skill).Equals(skillName, StringComparison.OrdinalIgnoreCase) || s.Skill.ToString().Equals(skillName, StringComparison.OrdinalIgnoreCase));
 
             if (skill == null)
             {
-                if (player == null)
-                {
-                    Server.PrintToConsole(Localization.GetTranslationWithoutIlliterate("skill_not_found_setskill"));
-                    return;
-                }
-                SkillUtils.PrintToChat(player, player.GetTranslationWithoutIlliterate("skill_not_found_setskill"));
+                string notFound = Localization.GetTranslationWithoutIlliterate("skill_not_found_setskill");
+                // Say when the name is right but the skill is simply not loaded (inactive in skillsInfo.json).
+                if (Enum.TryParse<Skills>(skillName.Replace(" ", ""), true, out var known) && !SkillsInfo.GetValue<bool>(known, "active"))
+                    notFound = $"{known} is set to \"Active\": false in skillsInfo.json, so it is not loaded.";
+
+                if (player == null) Server.PrintToConsole(notFound);
+                else SkillUtils.PrintToChat(player, notFound);
+                return;
+            }
+
+            // Loaded, but kept out of play on this server: say exactly why instead of "not found".
+            if (IsSkillBlockedByMode(skill.Skill))
+            {
+                string reason = EntitySafety.IsSkillBlocked(skill.Skill)
+                    ? $"entity spawning is disabled (CS2 {EntitySafety.GameVersion ?? "?"}, CounterStrikeSharp {EntitySafety.CounterStrikeSharpVersion ?? "?"}): add the CS2 version to EntitySpawnSafety.VerifiedGameVersions or set EntitySpawnSafety.Mode to \"Off\""
+                    : Event.IsSkillMissingHooks(skill.Skill)
+                        ? "a game hook it needs failed to load"
+                        : "it is on the retakes incompatible / retakes-only list";
+                string blocked = $"{skill.Skill} is loaded but blocked on this server: {reason}.";
+
+                if (player == null) Server.PrintToConsole(blocked);
+                else SkillUtils.PrintToChat(player, blocked);
                 return;
             }
 

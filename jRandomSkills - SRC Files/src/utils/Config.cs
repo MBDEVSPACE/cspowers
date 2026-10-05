@@ -304,6 +304,7 @@ namespace src.utils
                     WSADMenuControllsLineColor2 = "white",
                     WSADMenuControllsLineColor3 = "green",
                     VerticalOffsetLines = 3,
+                    NoticeLineColor = "#FFD700",
                 };
 
                 ChatMessage = new ChatMessage
@@ -541,6 +542,8 @@ namespace src.utils
             public required string WSADMenuControllsLineColor3 { get; set; }
             // Empty lines appended under the skill HUD; each one lifts the whole box a little (0 = game default position).
             public int VerticalOffsetLines { get; set; } = 3;
+            // Colour of notices (retakes site call, plant prompt) drawn under the skill inside the HUD box.
+            public string NoticeLineColor { get; set; } = "#FFD700";
         }
 
         public class LanguageSystem

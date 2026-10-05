@@ -443,6 +443,9 @@ namespace src
         public bool SkillUsed = false;
         public bool? HudOnDeathBlocked { get; set; }
         public HudCacheEntry? HudCache { get; set; }
+        // A short notice (retakes site call, plant prompt) drawn inside the skill HUD box so nothing overlaps.
+        public string? CenterNotice { get; set; }
+        public DateTime CenterNoticeUntil { get; set; }
     }
 
     public sealed class HudCacheEntry
@@ -452,6 +455,7 @@ namespace src
         public string? Header;
         public string? Center;
         public string? Extra;
+        public string? Notice;
         public bool IsDescription;
         public string? Content;
     }
