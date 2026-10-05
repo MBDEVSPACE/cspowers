@@ -135,8 +135,9 @@ namespace src
 
         internal void LoadAllSkills()
         {
+            // Admin-only skills load even when skillsInfo.json says Active: false; they are never drawn anyway.
             foreach (var skill in Enum.GetValues(typeof(Skills)))
-                if (SkillsInfo.GetValue<bool>(skill, "active"))
+                if (SkillsInfo.GetValue<bool>(skill, "active") || IsAdminOnlySkill((Skills)skill))
                     SkillAction(skill.ToString()!, "LoadSkill");
 
             Debug.WriteToDebug($"jRandomSkills v{Instance.ModuleVersion} ({SkillData.Skills.Count - 1}/{SkillsInfo.LoadedConfig.Count - 1} Skills) loaded!");
