@@ -121,20 +121,30 @@ namespace src.utils
 
         public static bool IsHudFrame() => Server.TickCount % 4 == 0;
 
+        // HTML for a HUD notice: a big bold headline (e.g. the site letter) with an optional smaller line under it.
+        public static string NoticeHtml(string headline, string? detail = null, string? headlineColor = null)
+        {
+            var config = Config.LoadedConfig.HtmlHudCustomisation;
+            string html = $"<font class='fontWeight-Bold fontSize-l' color='{headlineColor ?? config.NoticeLineColor}'>{headline}</font>";
+            if (!string.IsNullOrWhiteSpace(detail))
+                html += $"<br><font class='fontSize-sm' color='{config.NoticeLineColor}'>{detail}</font>";
+            return html;
+        }
+
         // Shows a short notice under the player's skill inside the HUD box (so it never overlaps the skill text).
-        // Falls back to the game's alert box for players the plugin has no HUD state for.
-        public static void ShowCenterNotice(CCSPlayerController? player, string text, float seconds = 5f)
+        // `html` comes from NoticeHtml; `plainText` is what players without plugin HUD state see in the alert box.
+        public static void ShowCenterNotice(CCSPlayerController? player, string html, string plainText, float seconds = 5f)
         {
             if (player == null || !player.IsValid || player.IsBot) return;
 
             var info = PlayerManager.GetPlayerByIndex(player.Index);
             if (info == null)
             {
-                player.PrintToCenterAlert(text);
+                player.PrintToCenterAlert(plainText);
                 return;
             }
 
-            info.CenterNotice = text;
+            info.CenterNotice = html;
             info.CenterNoticeUntil = DateTime.Now.AddSeconds(seconds);
         }
 

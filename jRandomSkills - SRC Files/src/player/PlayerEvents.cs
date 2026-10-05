@@ -980,9 +980,8 @@ namespace src.player
                     ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", config.VerticalOffsetLines))
                     : "";
 
-                string noticeLine = string.IsNullOrWhiteSpace(notice)
-                    ? ""
-                    : $"<br>{emptySymbol2}<font class='fontWeight-Bold fontSize-l' color='{config.NoticeLineColor}'>{notice}</font>{emptySymbol2}";
+                // The notice is ready-made HTML (see SkillUtils.NoticeHtml).
+                string noticeLine = string.IsNullOrWhiteSpace(notice) ? "" : $"<br>{emptySymbol2}{notice}{emptySymbol2}";
 
                 var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + noticeLine + lift;
 
