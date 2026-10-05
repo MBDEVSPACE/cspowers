@@ -302,7 +302,7 @@
   "jumpingjack_desc": "跳跃会恢复生命值",
 
   "killerflash": "致命闪光",
-  "killerflash_desc": "被你的闪光弹完全致盲的敌人会死亡",
+  "killerflash_desc": "任何被你的闪光弹完全致盲的人都会死亡（包括你自己）",
 
   "knockback": "knockback",
   "knockback_desc": "knockback_desc",

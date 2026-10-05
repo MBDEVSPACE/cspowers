@@ -1339,7 +1339,7 @@
   },
   {
     "FlashDuration": 1.0,
-    "FriendlyFire": false,
+    "FriendlyFire": true,
     "GrenadeLimit": 1,
     "Weight": 1.0,
     "NeedsTeammates": false,
@@ -1354,8 +1354,7 @@
     "RequiredPermission": "",
     "MaxPerServer": 1,
     "MinPlayer": 0,
-    "Rarity": "Epic",
-    "KillSelf": false
+    "Rarity": "Epic"
   },
   {
     "HealthToAdd": 3,

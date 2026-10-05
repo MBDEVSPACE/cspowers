@@ -27,10 +27,9 @@ namespace src.player.skills
             var playerInfo = PlayerManager.GetPlayerByIndex(player!.Index);
             var attackerInfo = PlayerManager.GetPlayerByIndex(attacker!.Index);
 
-            if (player!.Index == attacker!.Index && !SkillsInfo.GetValue<bool>(skillName, "killSelf")) return;
-            if (!SkillsInfo.GetValue<bool>(skillName, "friendlyFire") && player.Team == attacker.Team) return;
+            if (!SkillsInfo.GetValue<bool>(skillName, "friendlyFire") && player!.Team == attacker!.Team) return;
 
-            if (attackerInfo?.HasSkill(skillName) == true && playerInfo?.HasSkill(Skills.AntyFlash) != true && player!.PlayerPawn.Value!.FlashDuration >= SkillsInfo.GetValue<float>(skillName, "flashDuration"))
+            if (attackerInfo?.HasSkill(skillName) == true && playerInfo?.Skill != Skills.AntyFlash && player!.PlayerPawn.Value!.FlashDuration >= SkillsInfo.GetValue<float>(skillName, "flashDuration"))
                 SkillUtils.TakeHealth(player.PlayerPawn.Value, 9999, attacker, KillfeedIcons.Flashbang);
         }
 
@@ -100,12 +99,10 @@ namespace src.player.skills
             SkillUtils.UpdateGrenadeCount(player, CsItem.FlashbangGrenade, 1);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#57bcff", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = 1, Rarity rarity = Rarity.Epic, float flashDuration = 1f, bool friendlyFire = false, bool killSelf = false, int grenadeLimit = 1) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#57bcff", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = 1, Rarity rarity = Rarity.Epic, float flashDuration = 1f, bool friendlyFire = true, int grenadeLimit = 1) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             public float FlashDuration { get; set; } = flashDuration;
-            // Whether teammates and the thrower themself can die to the flash.
             public bool FriendlyFire { get; set; } = friendlyFire;
-            public bool KillSelf { get; set; } = killSelf;
             public int GrenadeLimit { get; set; } = grenadeLimit;
         }
     }

@@ -67,6 +67,7 @@ namespace src.player.skills
                     if (onGround)
                     {
                         skillInfo.Slamming = false;
+                        skillInfo.LandedTick = Server.TickCount;
                         Impact(player, pawn);
                     }
                     continue;
@@ -86,6 +87,25 @@ namespace src.player.skills
                     pawn.Teleport(null, null, new Vector(0, 0, -SkillsInfo.GetValue<float>(skillName, "slamVelocity")));
                 }
             }
+        }
+
+        // The slam drives the player into the ground far faster than a normal fall; the game would count that as
+        // lethal fall damage, so fall damage is swallowed while slamming and for a few ticks after landing.
+        public static void OnTakeDamage(CBaseEntity damagedEntity, CTakeDamageInfo damageInfo)
+        {
+            if (SkillPlayerInfo.IsEmpty || damagedEntity == null || damageInfo == null || damageInfo.Handle == nint.Zero) return;
+            if ((damageInfo.BitsDamageType & DamageTypes_t.DMG_FALL) == 0) return;
+
+            var pawn = new CCSPlayerPawn(damagedEntity.Handle);
+            if (!pawn.IsValid || pawn.DesignerName != "player") return;
+            var controller = pawn.Controller?.Value;
+            if (controller == null || !controller.IsValid) return;
+
+            var player = PlayerManager.GetPlayerEvent(controller.As<CCSPlayerController>());
+            if (player == null || !SkillPlayerInfo.TryGetValue(player.Index, out var info)) return;
+
+            if (info.Slamming || info.LandedTick + 16 >= Server.TickCount)
+                damageInfo.Damage = 0;
         }
 
         private static void Impact(CCSPlayerController player, CCSPlayerPawn pawn)
@@ -124,6 +144,7 @@ namespace src.player.skills
             public DateTime Cooldown { get; set; }
             public bool Slamming { get; set; }
             public int AirTicks { get; set; }
+            public int LandedTick { get; set; } = -100;
         }
 
         public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#b5651d", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Uncommon, float cooldown = 6f, float slamVelocity = 1500f, float radius = 220f, float pushVelocity = 500f, float jumpVelocity = 300f, int damage = 25, int minAirTicks = 8, float soundVolume = .6f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
