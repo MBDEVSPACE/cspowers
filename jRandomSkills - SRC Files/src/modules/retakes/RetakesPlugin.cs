@@ -510,6 +510,11 @@ public class RetakesPlugin
             return HookResult.Continue;
         }
 
+        // The game's "The bomb has been planted" banner covers the skill HUD; keep the event server-side
+        // when the admin asked for that. Every retakes round starts planted anyway.
+        if (src.utils.Config.LoadedConfig.Modules.Retakes.HideBombPlantedAlert)
+            info.DontBroadcast = true;
+
         return _roundEventHandlers?.OnBombPlanted(@event, info) ?? HookResult.Continue;
     }
 

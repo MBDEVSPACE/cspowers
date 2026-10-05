@@ -11,16 +11,19 @@ namespace src.player.skills
     {
         private const Skills skillName = Skills.BunnyHop;
         private static readonly ConcurrentDictionary<uint, int> playersLastJump = [];
+        private static readonly ConcurrentDictionary<uint, (float X, float Y)> airVelocity = [];
         private static readonly List<CCSPlayerController> holderBuffer = [];
 
         public static void NewRound()
         {
             playersLastJump.Clear();
+            airVelocity.Clear();
         }
 
         public static void PlayerDisconnect(uint playerIndex)
         {
             playersLastJump.TryRemove(playerIndex, out _);
+            airVelocity.TryRemove(playerIndex, out _);
         }
 
         public static void LoadSkill()
@@ -64,7 +67,20 @@ namespace src.player.skills
             // Hold jump: as long as the key is down every landing turns straight into the next hop.
             bool jumpHeld = (player.Buttons & PlayerButtons.Jump) != 0
                 || (movement?.Buttons?.ButtonStates[0] & (ulong)PlayerButtons.Jump) != 0;
-            if (!jumpHeld || !flags.HasFlag(PlayerFlags.FL_ONGROUND)) return;
+            bool onGround = flags.HasFlag(PlayerFlags.FL_ONGROUND);
+
+            float vX = eventPlayerPawn.AbsVelocity.X;
+            float vY = eventPlayerPawn.AbsVelocity.Y;
+
+            if (!onGround)
+            {
+                // Remember the air speed: the game clamps it on landing (sv_enablebunnyhopping 0) and this
+                // is what gets restored on the next hop, like autobhop with the cap disabled.
+                airVelocity[eventPlayer!.Index] = (vX, vY);
+                return;
+            }
+
+            if (!jumpHeld) return;
 
             // Only once per landing: a new hop needs a tick in the air in between.
             if (playersLastJump.TryGetValue(eventPlayer!.Index, out int lastTick) && lastTick + 2 >= Server.TickCount) return;
@@ -74,15 +90,22 @@ namespace src.player.skills
             float maxSpeed = SkillsInfo.GetValue<float>(skillName, "maxSpeed");
             float boost = Math.Clamp(SkillsInfo.GetValue<float>(skillName, "jumpBoost"), 1f, 1.5f);
 
-            float vX = eventPlayerPawn.AbsVelocity.X;
-            float vY = eventPlayerPawn.AbsVelocity.Y;
-            float speed2D = MathF.Sqrt(vX * vX + vY * vY);
+            // Start from the pre-landing air speed if the landing clamp took some away.
+            if (airVelocity.TryGetValue(eventPlayer.Index, out var air))
+            {
+                float airSpeed = MathF.Sqrt(air.X * air.X + air.Y * air.Y);
+                float groundSpeed = MathF.Sqrt(vX * vX + vY * vY);
+                if (airSpeed > groundSpeed) { vX = air.X; vY = air.Y; }
+            }
 
-            // Gentle gain per hop, capped: no sudden speed jumps, no hard stop at the cap.
-            float target = speed2D < 10f ? speed2D : Math.Min(speed2D * boost, Math.Max(maxSpeed, speed2D * 0.98f));
+            float speed2D = MathF.Sqrt(vX * vX + vY * vY);
+            float target = speed2D < 10f ? speed2D : Math.Min(speed2D * boost, Math.Max(maxSpeed, speed2D));
             float scale = speed2D > 0f ? target / speed2D : 1f;
 
-            eventPlayerPawn.Teleport(null, null, new Vector(vX * scale, vY * scale, jumpVelocity));
+            // Written straight into the velocity (no Teleport): a teleport each hop is what made it feel laggy.
+            eventPlayerPawn.AbsVelocity.X = vX * scale;
+            eventPlayerPawn.AbsVelocity.Y = vY * scale;
+            eventPlayerPawn.AbsVelocity.Z = jumpVelocity;
         }
 
         public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 500f, float jumpVelocity = 300f, float jumpBoost = 1.08f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
