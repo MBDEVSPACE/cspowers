@@ -121,6 +121,23 @@ namespace src.utils
 
         public static bool IsHudFrame() => Server.TickCount % 4 == 0;
 
+        // Shows a short notice under the player's skill inside the HUD box (so it never overlaps the skill text).
+        // Falls back to the game's alert box for players the plugin has no HUD state for.
+        public static void ShowCenterNotice(CCSPlayerController? player, string text, float seconds = 5f)
+        {
+            if (player == null || !player.IsValid || player.IsBot) return;
+
+            var info = PlayerManager.GetPlayerByIndex(player.Index);
+            if (info == null)
+            {
+                player.PrintToCenterAlert(text);
+                return;
+            }
+
+            info.CenterNotice = text;
+            info.CenterNoticeUntil = DateTime.Now.AddSeconds(seconds);
+        }
+
         public static void RegisterSkill(Skills skill, string color, bool display = true)
         {
             if (!SkillData.Skills.Any(s => s.Skill == skill))
