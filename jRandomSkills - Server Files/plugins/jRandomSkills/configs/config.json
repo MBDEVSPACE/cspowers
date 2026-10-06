@@ -150,7 +150,7 @@
     "WSADMenuControllsLineColor1": "cyan",
     "WSADMenuControllsLineColor2": "white",
     "WSADMenuControllsLineColor3": "green",
-    "VerticalOffsetLines": 3,
+    "VerticalOffsetLines": 1,
     "NoticeLineColor": "#FFD700"
   },
   "ChatMessage": {

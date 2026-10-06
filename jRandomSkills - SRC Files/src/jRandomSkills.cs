@@ -439,7 +439,27 @@ namespace src
         public DateTime SkillHudExpired { get; set; }
         public DateTime SkillDescriptionHudExpired { get; set; }
         public DateTime HudSuppressedUntil { get; set; }
-        public string? PrintHTML { get; set; }
+        // Several held skills write their cooldown text here. A skill that has nothing to show writes null
+        // every HUD frame, which would wipe another skill's countdown; a null within half a second of a
+        // non-null write is therefore ignored. ClearPrintHTML() clears unconditionally.
+        private string? _printHtml;
+        private int _printHtmlTick = -1000;
+        public string? PrintHTML
+        {
+            get => _printHtml;
+            set
+            {
+                if (value == null)
+                {
+                    if (CounterStrikeSharp.API.Server.TickCount - _printHtmlTick < 32) return;
+                    _printHtml = null;
+                    return;
+                }
+                _printHtml = value;
+                _printHtmlTick = CounterStrikeSharp.API.Server.TickCount;
+            }
+        }
+        public void ClearPrintHTML() { _printHtml = null; _printHtmlTick = -1000; }
         public int HideHUD { get; set; }
         public bool SkillUsed = false;
         public bool? HudOnDeathBlocked { get; set; }
