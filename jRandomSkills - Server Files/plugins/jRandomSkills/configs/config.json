@@ -151,7 +151,8 @@
     "WSADMenuControllsLineColor2": "white",
     "WSADMenuControllsLineColor3": "green",
     "VerticalOffsetLines": 1,
-    "NoticeLineColor": "#FFD700"
+    "NoticeLineColor": "#FFD700",
+    "NoticeLiftLines": 7
   },
   "ChatMessage": {
     "MaxWidth": 1280.0,
