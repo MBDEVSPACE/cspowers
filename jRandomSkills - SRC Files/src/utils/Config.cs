@@ -477,7 +477,7 @@ namespace src.utils
             public List<string> IncompatibleSkills { get; set; } =
             [
                 "AreaReaper", "Bankrupt", "Bounty", "C4Camouflage", "ChillOut", "EnemySpawn", "ExpensiveAmmo",
-                "HotBomb", "MoneySwap", "Pickpocket", "Planter", "Retreat", "ReturnToSender", "RichBoy",
+                "HotBomb", "MoneySwap", "Pickpocket", "Planter", "Retreat", "Saper", "ReturnToSender", "RichBoy",
                 "RobinHood", "ShortBomb", "Watchmaker",
             ];
             // Skills built around the retakes mode; they are only drawn while it runs.

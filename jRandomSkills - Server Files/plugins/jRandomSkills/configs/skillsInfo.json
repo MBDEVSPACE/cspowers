@@ -488,7 +488,7 @@
     "DisableOnPistolRound": false,
     "OnlyTeam": 0,
     "Color": "#8A2BE2",
-    "Active": true,
+    "Active": false,
     "Name": "Saper",
     "HudDuration": null,
     "DescriptionHudDuration": null,
