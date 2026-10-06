@@ -133,7 +133,7 @@ namespace src.utils
 
         // Shows a short notice under the player's skill inside the HUD box (so it never overlaps the skill text).
         // `html` comes from NoticeHtml; `plainText` is what players without plugin HUD state see in the alert box.
-        public static void ShowCenterNotice(CCSPlayerController? player, string html, string plainText, float seconds = 5f)
+        public static void ShowCenterNotice(CCSPlayerController? player, string html, string plainText, float seconds = 5f, bool exclusive = false)
         {
             if (player == null || !player.IsValid || player.IsBot) return;
 
@@ -146,6 +146,7 @@ namespace src.utils
 
             info.CenterNotice = html;
             info.CenterNoticeUntil = DateTime.Now.AddSeconds(seconds);
+            info.CenterNoticeExclusive = exclusive;
         }
 
         public static void RegisterSkill(Skills skill, string color, bool display = true)

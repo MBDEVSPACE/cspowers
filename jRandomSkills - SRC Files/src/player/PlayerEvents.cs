@@ -946,6 +946,8 @@ namespace src.player
                 var config = Config.LoadedConfig.HtmlHudCustomisation;
 
                 string? notice = skillPlayer != null && skillPlayer.CenterNoticeUntil > DateTime.Now ? skillPlayer.CenterNotice : null;
+                bool noticeExclusive = notice != null && skillPlayer!.CenterNoticeExclusive;
+                if (noticeExclusive) notice = "<!x>" + notice;
 
                 var cache = skillPlayer?.HudCache;
                 if (cache != null
@@ -995,6 +997,14 @@ namespace src.player
                     : "";
 
                 var hudContent = "<jRS/>" + noticeLine + infoLine + skillLine + remainingLine + statusHtml + lift;
+
+                // Round-start announcement: the box carries only the banner and is lifted high on screen, so it reads
+                // as its own alert at the top; the skill lines come back when it expires.
+                if (noticeExclusive)
+                {
+                    string bigLift = string.Concat(Enumerable.Repeat("<br><font class='fontSize-l'> </font>", Math.Max(0, config.NoticeLiftLines)));
+                    hudContent = "<jRS/>" + emptySymbol2 + notice!["<!x>".Length..] + emptySymbol2 + bigLift;
+                }
 
                 if (skillPlayer != null)
                 {

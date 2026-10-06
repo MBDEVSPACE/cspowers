@@ -59,12 +59,11 @@ public class AnnouncementService
         Logger.LogInfo("Announcement", $"Announced plant location: {locationName}");
     }
 
-    private static void ShowSiteBanner(CCSPlayerController player, string bannerText, System.Drawing.Color color, string fallbackHtml, string plainText)
+    private static void ShowSiteBanner(CCSPlayerController player, string bannerText, System.Drawing.Color color, string bannerHtml, string plainText)
     {
-        if (src.utils.ScreenText.Available)
-            src.utils.ScreenText.Show(player, bannerText, color, fontSize: 64f, up: 2.2f, seconds: 10f);
-        else
-            src.utils.SkillUtils.ShowCenterNotice(player, fallbackHtml, plainText, 10f);
+        // Round-start alert: the centre box shows only this banner, lifted to the top of the screen, for a few
+        // seconds; the skill HUD takes the box back afterwards.
+        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, 6f, exclusive: true);
     }
 
     // Chat colour codes are control characters; they show up as junk in a center alert.
@@ -87,7 +86,7 @@ public class AnnouncementService
         var centerText = StripColors(centerAnnouncementMessage);
         string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
         var siteRgb = bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 255, 80, 80) : System.Drawing.Color.FromArgb(255, 80, 160, 255);
-        var centerHtml = src.utils.SkillUtils.NoticeHtml($"SITE {bombsite}", centerText, siteColor);
+        var centerHtml = $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>\u25B6\u25B6  SITE {bombsite}  \u25C0\u25C0</font><br><font class='fontWeight-Bold fontSize-l' color='{siteColor}'>{bombsite}</font><br><font class='fontSize-m' color='#FFFFFF'>{centerText}</font>";
         var bannerText = $"SITE {bombsite}\n{centerText}";
 
         foreach (var player in Utilities.GetPlayers())

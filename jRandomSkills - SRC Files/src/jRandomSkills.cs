@@ -467,6 +467,8 @@ namespace src
         // A short notice (retakes site call, plant prompt) drawn inside the skill HUD box so nothing overlaps.
         public string? CenterNotice { get; set; }
         public DateTime CenterNoticeUntil { get; set; }
+        // Exclusive: the box shows only the notice (big, lifted high) while it lasts; the skill lines return afterwards.
+        public bool CenterNoticeExclusive { get; set; }
     }
 
     public sealed class HudCacheEntry
