@@ -480,6 +480,7 @@ namespace src
         public string? Extra;
         public string? Status;
         public string? Notice;
+        public int LastSentTick;
         public bool IsDescription;
         public string? Content;
     }

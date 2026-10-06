@@ -49,6 +49,12 @@ namespace src.utils
             _translations.Clear();
             _playersLanguage.Clear();
             _lastSavedPlayersJson = string.Empty;
+            try { OpenGeoReader(); }
+            catch (Exception ex)
+            {
+                _geoLiteBroken = true;
+                Server.PrintToConsole($"[TiredPowers] GeoLite database could not be opened, language falls back to the default: {ex.GetType().Name}: {ex.Message}");
+            }
             _skillNameCache.Clear();
             _skillDescCache.Clear();
             SetLangCode();
@@ -272,6 +278,18 @@ namespace src.utils
         }
 
         private static bool _geoLiteBroken = false;
+        // The .mmdb is opened once (at load) and kept: opening it per connecting player read megabytes from disk
+        // on the main thread during sign-on, which stalled the server long enough to overflow net channels.
+        private static Reader? _geoReader;
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static void OpenGeoReader()
+        {
+            _geoReader?.Dispose();
+            _geoReader = null;
+            if (Config.LoadedConfig.LanguageSystem.DisableGeoLite == true || !File.Exists(geoliteFilePath)) return;
+            _geoReader = new Reader(geoliteFilePath);
+        }
 
         private static string GetLangCode(CCSPlayerController? player)
         {
@@ -318,13 +336,12 @@ namespace src.utils
         private static string? GetLangCodeFromDatabase(string? playerIP)
         {
             if (string.IsNullOrEmpty(playerIP)) return null;
-            if (!File.Exists(geoliteFilePath)) return null;
-            using var reader = new Reader(geoliteFilePath);
+            if (_geoReader == null) return null;
 
             if (!IPAddress.TryParse(playerIP, out var ip))
                 return null;
 
-            var data = reader.Find<ConcurrentDictionary<string, object>>(ip);
+            var data = _geoReader.Find<ConcurrentDictionary<string, object>>(ip);
             if (data == null || data.IsEmpty) return null;
 
             if (data.TryGetValue("country", out var _country) && _country is Dictionary<string, object> country)
@@ -416,10 +433,29 @@ namespace src.utils
             if (json == null || json == _lastSavedPlayersJson)
                 return;
 
-            Directory.CreateDirectory(configsFolderPath);
-            File.WriteAllText(Path.Combine(configsFolderPath, playersLanguageFileName), json);
             _lastSavedPlayersJson = json;
+
+            // Disk write off the main thread; the json snapshot is immutable so nothing is shared.
+            string path = Path.Combine(configsFolderPath, playersLanguageFileName);
+            string folder = configsFolderPath;
+            _ = Task.Run(() =>
+            {
+                lock (_saveLock)
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(folder);
+                        File.WriteAllText(path, json);
+                    }
+                    catch (Exception ex)
+                    {
+                        Server.PrintToConsole($"[TiredPowers] Could not save {playersLanguageFileName}: {ex.Message}");
+                    }
+                }
+            });
         }
+
+        private static readonly object _saveLock = new();
 
         private static string? GetLangCodeFromFile(ulong? playerSteamID)
         {

@@ -960,7 +960,13 @@ namespace src.player
                     && string.Equals(cache.Status, statusLine, StringComparison.Ordinal)
                     && string.Equals(cache.Notice, notice, StringComparison.Ordinal))
                 {
-                    player.PrintToCenterHtml(cache.Content);
+                    // Unchanged content: refresh 4 times a second, not every HUD frame. The centre hint stays on screen
+                    // well past that, and fewer reliable messages per player means no net-channel overflow.
+                    if (Server.TickCount - cache.LastSentTick >= 16)
+                    {
+                        cache.LastSentTick = Server.TickCount;
+                        player.PrintToCenterHtml(cache.Content);
+                    }
                     return;
                 }
 
@@ -1034,6 +1040,7 @@ namespace src.player
                     cache.Notice = notice;
                     cache.IsDescription = isDescription;
                     cache.Content = hudContent;
+                    cache.LastSentTick = Server.TickCount;
                 }
 
                 player.PrintToCenterHtml(hudContent);

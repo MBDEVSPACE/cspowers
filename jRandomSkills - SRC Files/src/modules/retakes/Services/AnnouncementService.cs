@@ -63,7 +63,7 @@ public class AnnouncementService
     {
         // Round-start alert: the centre box shows only this banner, lifted towards the top of the screen, for a
         // few seconds; the skill HUD takes the box back afterwards.
-        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, 6f, exclusive: true);
+        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, 4f, exclusive: true);
     }
 
     // Chat colour codes are control characters; they show up as junk in a center alert.
@@ -84,7 +84,7 @@ public class AnnouncementService
         // towards the top of the screen, and the skill HUD takes the box back when it expires.
         var centerText = StripColors(centerAnnouncementMessage);
         string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
-        var centerHtml = $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>\u25B6\u25B6  SITE {bombsite}  \u25C0\u25C0</font><br><font class='fontSize-m' color='#FFFFFF'>{centerText}</font>";
+        var centerHtml = $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>\u25B6  SITE {bombsite}  \u25C0</font>";
 
         foreach (var player in Utilities.GetPlayers())
         {
