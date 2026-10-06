@@ -73,10 +73,11 @@ public class AnnouncementService
         var announcementMessage = _plugin.Localizer["retakes.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
         var centerAnnouncementMessage = _plugin.Localizer["retakes.center.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
 
-        // The site call goes to the game's alert box at the top of the screen (big text), well away from the
-        // skill HUD lower down. The alert cannot be styled, so the site letter is spelled out in front.
+        // The site call is a big banner at the top of the skill HUD box (above the skill, never covering it):
+        // "SITE A" in the site colour with the T/CT count underneath, kept up for most of the round.
         var centerText = StripColors(centerAnnouncementMessage);
-        var alertText = $"SITE {bombsite}   |   {centerText}";
+        string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
+        var centerHtml = src.utils.SkillUtils.NoticeHtml($"SITE {bombsite}", centerText, siteColor);
 
         foreach (var player in Utilities.GetPlayers())
         {
@@ -86,7 +87,7 @@ public class AnnouncementService
 
                 if (_centerEnabled)
                 {
-                    player.PrintToCenterAlert(alertText);
+                    src.utils.SkillUtils.ShowCenterNotice(player, centerHtml, centerText, 40f);
                 }
 
                 if (_voicesEnabled && !_hasMutedVoices.Contains(player))
@@ -103,7 +104,7 @@ public class AnnouncementService
                 continue;
             }
 
-            player.PrintToCenterAlert(alertText);
+            src.utils.SkillUtils.ShowCenterNotice(player, centerHtml, centerText, 40f);
         }
 
         Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT)");

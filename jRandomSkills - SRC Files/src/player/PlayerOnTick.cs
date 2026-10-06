@@ -100,6 +100,7 @@ namespace src.player
             string infoLine = string.Empty;
             string skillLine = string.Empty;
             string remainingLine = string.Empty;
+            string? statusLine = null;
 
             bool showDescriptionHUD = skillPlayer.SkillDescriptionHudExpired >= now || Config.LoadedConfig.DisplayAlwaysDescription;
             bool isDescription = true;
@@ -133,11 +134,10 @@ namespace src.player
 
                         if (skillInfo.Skill != Skills.None)
                         {
-                            remainingLine = string.IsNullOrEmpty(skillPlayer.PrintHTML)
-                                ? (showDescriptionHUD ? ComboManager.HudDescription(player, skillPlayer) : "")
-                                : skillPlayer.PrintHTML;
-
-                            isDescription = string.IsNullOrEmpty(skillPlayer.PrintHTML);
+                            // Description and cooldown/status are separate lines: using a skill never hides its description.
+                            remainingLine = showDescriptionHUD ? ComboManager.HudDescription(player, skillPlayer) : "";
+                            statusLine = skillPlayer.PrintHTML;
+                            isDescription = true;
                         }
                     }
                 }
@@ -191,19 +191,16 @@ namespace src.player
                         skillLine = $"<font color='{observedSpecialInfo.Color}'>{specialName}({primaryName})</font>";
                     }
 
-                    if (observedSkill.Skill != Skills.None && !string.IsNullOrEmpty(observedSkill.PrintHTML))
-                    {
-                        remainingLine = observedSkill.PrintHTML;
-                        isDescription = false;
-                    }
-                    else if (showDescriptionHUD)
+                    if (showDescriptionHUD)
                         remainingLine = ComboManager.HudDescription(player, observedSkill);
+                    if (observedSkill.Skill != Skills.None && !string.IsNullOrEmpty(observedSkill.PrintHTML))
+                        statusLine = observedSkill.PrintHTML;
                 }
             }
 
             if (string.IsNullOrEmpty(skillLine)) return;
 
-            Event.UpdateSkillHUD(player, skillPlayer, infoLine, skillLine, remainingLine, isDescription);
+            Event.UpdateSkillHUD(player, skillPlayer, infoLine, skillLine, remainingLine, isDescription, statusLine);
         }
     }
 }

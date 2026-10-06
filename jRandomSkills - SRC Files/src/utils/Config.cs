@@ -212,7 +212,7 @@ namespace src.utils
                 SkillTimeBeforeStart = 7;
                 SkillHudDuration = -1;
                 SkillDescriptionDuration = 7;
-                DisplayAlwaysDescription = false;
+                DisplayAlwaysDescription = true;
                 EnableFlashingHtmlHudFix = false;
                 TraceRayBeam = false;
                 DisableSpectateHUD = false;
