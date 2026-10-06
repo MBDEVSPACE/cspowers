@@ -313,7 +313,9 @@ namespace src.utils
             if (scale <= 0 || skeleton == null) return;
 
             skeleton.Scale = scale;
+            playerPawn.CBodyComponent.SceneNode.Scale = scale;
             playerPawn.AcceptInput("SetScale", null, null, scale.ToString(CultureInfo.InvariantCulture));
+            Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_CBodyComponent");
 
             Server.NextWorldUpdate(() =>
             {
