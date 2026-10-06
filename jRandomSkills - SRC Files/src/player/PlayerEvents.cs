@@ -570,7 +570,6 @@ namespace src.player
         {
             ReportStall();
             NoRecoil.RestoreSpread();
-            ScreenText.OnTick();
 
             long perfStart = PerfLog.Start();
             lock (setLock)
@@ -992,9 +991,7 @@ namespace src.player
                 // lift lines are added so the top of the text is never pushed out of view.
                 int extraLines = Math.Max(0, (noticeLine + infoLine + skillLine + remainingLine + statusHtml).Split("<br>").Length - 3);
                 int liftLines = Math.Max(0, config.VerticalOffsetLines - extraLines);
-                string lift = liftLines > 0
-                    ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", liftLines))
-                    : "";
+                string lift = liftLines > 0 ? string.Concat(Enumerable.Repeat("<br> ", liftLines)) : "";
 
                 var hudContent = "<jRS/>" + noticeLine + infoLine + skillLine + remainingLine + statusHtml + lift;
 
@@ -1002,9 +999,28 @@ namespace src.player
                 // as its own alert at the top; the skill lines come back when it expires.
                 if (noticeExclusive)
                 {
-                    string bigLift = string.Concat(Enumerable.Repeat("<br><font class='fontSize-l'> </font>", Math.Max(0, config.NoticeLiftLines)));
-                    hudContent = "<jRS/>" + emptySymbol2 + notice!["<!x>".Length..] + emptySymbol2 + bigLift;
+                    string bigLift = string.Concat(Enumerable.Repeat("<br> ", Math.Max(0, config.NoticeLiftLines)));
+                    hudContent = "<jRS/>" + notice!["<!x>".Length..] + bigLift;
                 }
+
+                // Keep the message small: an oversized centre-HTML message overflows the client's reliable channel
+                // and gets the player kicked. Drop the lift first, then the status line, then shorten the description.
+                const int MaxHudBytes = 900;
+                if (hudContent.Length > MaxHudBytes && !noticeExclusive)
+                {
+                    hudContent = "<jRS/>" + noticeLine + infoLine + skillLine + remainingLine + statusHtml;
+                    if (hudContent.Length > MaxHudBytes)
+                        hudContent = "<jRS/>" + noticeLine + infoLine + skillLine + remainingLine;
+                    if (hudContent.Length > MaxHudBytes && !string.IsNullOrEmpty(remainingLine))
+                    {
+                        int room = Math.Max(0, MaxHudBytes - ("<jRS/>" + noticeLine + infoLine + skillLine).Length - 60);
+                        string shortExtra = extraLine!.Length > room ? extraLine[..room] + "…" : extraLine;
+                        hudContent = "<jRS/>" + noticeLine + infoLine + skillLine
+                            + $"<br>{emptySymbol}<font class='fontSize-{extraLineSize}' color='{config.SkillDescriptionLineColor}'>{shortExtra}</font>{emptySymbol}";
+                    }
+                }
+                if (hudContent.Length > MaxHudBytes)
+                    hudContent = hudContent[..MaxHudBytes];
 
                 if (skillPlayer != null)
                 {

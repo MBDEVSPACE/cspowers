@@ -305,7 +305,7 @@ namespace src.utils
                     WSADMenuControllsLineColor3 = "green",
                     VerticalOffsetLines = 1,
                     NoticeLineColor = "#FFD700",
-                    NoticeLiftLines = 7,
+                    NoticeLiftLines = 4,
                 };
 
                 ChatMessage = new ChatMessage
@@ -548,7 +548,7 @@ namespace src.utils
             // Colour of notices (retakes site call, plant prompt) drawn under the skill inside the HUD box.
             public string NoticeLineColor { get; set; } = "#FFD700";
             // Empty lines under a round-start announcement (site call): more lines push the banner higher on screen.
-            public int NoticeLiftLines { get; set; } = 7;
+            public int NoticeLiftLines { get; set; } = 4;
         }
 
         public class LanguageSystem
