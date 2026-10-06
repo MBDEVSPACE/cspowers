@@ -241,9 +241,6 @@ namespace src.player
                     Server.PrintToConsole($"[TiredPowers] CheckTransmit dying-filter failed: {ex.Message}");
                 }
 
-                try { ScreenText.FilterTransmit(infoList); }
-                catch (Exception ex) { Server.PrintToConsole($"[TiredPowers] CheckTransmit screen-text filter failed: {ex.Message}"); }
-
                 DispatchCheckTransmit([infoList]);
             }
             PerfLog.Sample("CheckTransmit", perfStart);
