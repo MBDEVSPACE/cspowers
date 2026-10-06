@@ -102,7 +102,10 @@ namespace src.player
             string remainingLine = string.Empty;
             string? statusLine = null;
 
-            bool showDescriptionHUD = skillPlayer.SkillDescriptionHudExpired >= now || Config.LoadedConfig.DisplayAlwaysDescription;
+            // The description (what the skill does and which key uses it) stays on screen for the whole round.
+            // SkillDescriptionDuration / DisplayAlwaysDescription used to hide it after a few seconds; players kept
+            // missing how to use their skill, so the timer is no longer applied.
+            bool showDescriptionHUD = true;
             bool isDescription = true;
 
             var skills = SkillData.GetSnapshot();
