@@ -570,6 +570,7 @@ namespace src.player
         {
             ReportStall();
             NoRecoil.RestoreSpread();
+            ScreenText.OnTick();
 
             long perfStart = PerfLog.Start();
             lock (setLock)
