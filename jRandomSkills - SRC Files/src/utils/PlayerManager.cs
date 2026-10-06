@@ -103,6 +103,22 @@ namespace src.utils
             return cachedBomb != null && cachedBomb.IsValid ? cachedBomb : null;
         }
 
+        private static int cachedPlantedTick = -1;
+        private static CPlantedC4? cachedPlanted;
+
+        // The planted bomb, looked up at most once per tick. FindAllEntitiesByDesignerName walks every entity
+        // on the map; several skills asked for the bomb every tick for every player.
+        public static CPlantedC4? GetPlantedBomb()
+        {
+            int tick = Server.TickCount;
+            if (tick != cachedPlantedTick)
+            {
+                cachedPlantedTick = tick;
+                cachedPlanted = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault(b => b != null && b.IsValid);
+            }
+            return cachedPlanted != null && cachedPlanted.IsValid ? cachedPlanted : null;
+        }
+
         public static void Register(jSkill_PlayerInfo playerInfo)
         {
             if (playerInfo == null) return;

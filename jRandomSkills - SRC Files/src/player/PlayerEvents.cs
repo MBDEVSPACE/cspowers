@@ -518,14 +518,12 @@ namespace src.player
         private const double stallThresholdMs = 100.0;
         private static long lastTickTimestamp;
 
+        private static DateTime lastStallConsole = DateTime.MinValue;
+
+        // Always on: a gap of 150 ms or more between two ticks is printed to the console (at most once per 5 s)
+        // together with the plugin's own share of the previous tick, so a stall can be attributed or ruled out.
         private static void ReportStall()
         {
-            if (!PerfLog.Enabled)
-            {
-                lastTickTimestamp = 0;
-                return;
-            }
-
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             long previous = lastTickTimestamp;
             lastTickTimestamp = now;
@@ -533,12 +531,22 @@ namespace src.player
             if (previous == 0) return;
 
             double gapMs = (now - previous) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-            if (gapMs >= stallThresholdMs && !PlayerManager.IsServerIdle())
+            if (gapMs < stallThresholdMs || PlayerManager.IsServerIdle()) return;
+
+            var (tracked, owners) = EntityManager.GetStatistics();
+            string line = $"STALL gap={gapMs:F0}ms tick={Server.TickCount} plugin-last-tick={lastPluginTickMs:F1}ms ({lastSlowest}) tracked={tracked} owners={owners}{PerfContext()}";
+            PerfLog.Info(line);
+
+            if (gapMs >= 150 && (DateTime.Now - lastStallConsole).TotalSeconds >= 5)
             {
-                var (tracked, owners) = EntityManager.GetStatistics();
-                PerfLog.Info($"STALL gap={gapMs:F2}ms tick={Server.TickCount} tracked={tracked} owners={owners}{PerfContext()}");
+                lastStallConsole = DateTime.Now;
+                Server.PrintToConsole($"[TiredPowers] {line}");
             }
         }
+
+        private static double lastPluginTickMs;
+        private static string lastSlowest = "";
+        private static DateTime lastSlowConsole = DateTime.MinValue;
 
         public static string PerfContext()
         {
@@ -572,6 +580,7 @@ namespace src.player
             NoRecoil.RestoreSpread();
 
             long perfStart = PerfLog.Start();
+            long perfStart0 = System.Diagnostics.Stopwatch.GetTimestamp();
             lock (setLock)
             {
                 _activeSkillsSet.Clear();
@@ -589,9 +598,13 @@ namespace src.player
                 bool freeze = SkillUtils.IsFreezeTime();
                 _freezeDisabledSkills ??= BuildFreezeDisabledSkills();
 
+                Skills slowestSkill = Skills.None;
+                double slowestMs = 0;
+
                 foreach (var skill in _activeSkillsList)
                 {
                     if (freeze && _freezeDisabledSkills.Contains(skill)) continue;
+                    long skillStart = System.Diagnostics.Stopwatch.GetTimestamp();
                     try
                     {
                         Instance.SkillAction(_skillNames[skill], "OnTick");
@@ -603,6 +616,19 @@ namespace src.player
                         if (tickFailuresLogged.Add(skill))
                             Server.PrintToConsole($"[TiredPowers] {skill}.OnTick failed: {ex.InnerException?.Message ?? ex.Message}");
                     }
+                    double skillMs = (System.Diagnostics.Stopwatch.GetTimestamp() - skillStart) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                    if (skillMs > slowestMs) { slowestMs = skillMs; slowestSkill = skill; }
+                }
+
+                double totalMs = (System.Diagnostics.Stopwatch.GetTimestamp() - perfStart0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                lastPluginTickMs = totalMs;
+                lastSlowest = slowestSkill == Skills.None ? "-" : $"{slowestSkill} {slowestMs:F1}ms";
+
+                // The plugin's own tick work took long: name the skill. At most one line per 5 s.
+                if (totalMs >= 40 && (DateTime.Now - lastSlowConsole).TotalSeconds >= 5)
+                {
+                    lastSlowConsole = DateTime.Now;
+                    Server.PrintToConsole($"[TiredPowers] SLOW TICK plugin={totalMs:F1}ms slowest={lastSlowest}{PerfContext()}");
                 }
             }
             PerfLog.Sample("OnTick(skills)", perfStart);

@@ -57,11 +57,12 @@ namespace src
 
             Instance.RegisterListener<OnServerPrecacheResources>(LoadManifest);
 
-            Task.Run(async () =>
-            {
-                await Task.Delay(3500);
-                PrintInfoToConsole();
-            });
+            // Game-thread timer, not a thread-pool task: nothing in the plugin may touch the game from another thread.
+            AddTimer(3.5f, PrintInfoToConsole);
+
+            // Fewer blocking gen-2 collections on the game thread; a full GC pause of a few hundred ms is enough
+            // to overflow every client's net channel.
+            try { System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.SustainedLowLatency; } catch { }
         }
 
         public override void Unload(bool hotReload)
