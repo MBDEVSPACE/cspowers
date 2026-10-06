@@ -912,7 +912,7 @@ namespace src.utils
             if (player == null || !player.IsValid) return;
             var playerInfo = PlayerManager.GetPlayerByIndex(player!.Index);
             if (playerInfo == null) return;
-            playerInfo.PrintHTML = null;
+            playerInfo.ClearPrintHTML();
         }
 
         public static CTriggerMultiple? CreateTrigger(string name, float radius, Vector pos, uint ownerPlayerIndex = EntityManager.SystemOwnerIndex)

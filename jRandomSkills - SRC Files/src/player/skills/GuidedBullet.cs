@@ -350,7 +350,7 @@ namespace src.player.skills
             public int SuppressUntilTick { get; set; } = -1;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff4fd8", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Legendary, float speed = 900f, float turnRate = .25f, float hitRadius = 40f, float maxFlightTime = 6f, int damage = 150, float cooldown = 4f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff4fd8", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Legendary, float speed = 400f, float turnRate = .4f, float hitRadius = 40f, float maxFlightTime = 6f, int damage = 150, float cooldown = 4f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             // Bullet speed in units per second, how fast it bends towards the crosshair (0-1 per tick),
             // how close it has to pass to a player to count as a hit, and how long it can fly.
