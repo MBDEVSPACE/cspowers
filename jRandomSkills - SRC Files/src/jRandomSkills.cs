@@ -476,6 +476,7 @@ namespace src
         public string? Header;
         public string? Center;
         public string? Extra;
+        public string? Status;
         public string? Notice;
         public bool IsDescription;
         public string? Content;

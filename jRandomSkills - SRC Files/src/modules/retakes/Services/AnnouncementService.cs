@@ -59,6 +59,14 @@ public class AnnouncementService
         Logger.LogInfo("Announcement", $"Announced plant location: {locationName}");
     }
 
+    private static void ShowSiteBanner(CCSPlayerController player, string bannerText, System.Drawing.Color color, string fallbackHtml, string plainText)
+    {
+        if (src.utils.ScreenText.Available)
+            src.utils.ScreenText.Show(player, bannerText, color, fontSize: 64f, up: 2.2f, seconds: 10f);
+        else
+            src.utils.SkillUtils.ShowCenterNotice(player, fallbackHtml, plainText, 10f);
+    }
+
     // Chat colour codes are control characters; they show up as junk in a center alert.
     public static string StripColors(string text)
     {
@@ -73,10 +81,14 @@ public class AnnouncementService
         var announcementMessage = _plugin.Localizer["retakes.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
         var centerAnnouncementMessage = _plugin.Localizer["retakes.center.bombsite.announcement", bombsite.ToString(), numTerrorist, numCounterTerrorist];
 
-        // The site call goes to the game's alert box at the top of the screen (big text), well away from the
-        // skill HUD lower down. The alert cannot be styled, so the site letter is spelled out in front.
+        // The site call is its own on-screen banner (ScreenText: a world-text entity pinned to the top of the
+        // player's view), so it never shares the centre text slot with the skill HUD. If entity spawning is
+        // blocked on this server it falls back to a line at the top of the HUD box.
         var centerText = StripColors(centerAnnouncementMessage);
-        var alertText = $"SITE {bombsite}   |   {centerText}";
+        string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
+        var siteRgb = bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 255, 80, 80) : System.Drawing.Color.FromArgb(255, 80, 160, 255);
+        var centerHtml = src.utils.SkillUtils.NoticeHtml($"SITE {bombsite}", centerText, siteColor);
+        var bannerText = $"SITE {bombsite}\n{centerText}";
 
         foreach (var player in Utilities.GetPlayers())
         {
@@ -86,7 +98,7 @@ public class AnnouncementService
 
                 if (_centerEnabled)
                 {
-                    player.PrintToCenterAlert(alertText);
+                    ShowSiteBanner(player, bannerText, siteRgb, centerHtml, centerText);
                 }
 
                 if (_voicesEnabled && !_hasMutedVoices.Contains(player))
@@ -103,7 +115,7 @@ public class AnnouncementService
                 continue;
             }
 
-            player.PrintToCenterAlert(alertText);
+            ShowSiteBanner(player, bannerText, siteRgb, centerHtml, centerText);
         }
 
         Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT)");

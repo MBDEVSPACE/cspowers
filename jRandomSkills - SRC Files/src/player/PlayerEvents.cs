@@ -570,6 +570,7 @@ namespace src.player
         {
             ReportStall();
             NoRecoil.RestoreSpread();
+            ScreenText.OnTick();
 
             long perfStart = PerfLog.Start();
             lock (setLock)
@@ -930,7 +931,7 @@ namespace src.player
 
         private static readonly Dictionary<uint, jSkill_SkillInfo> nextRoundPicks = [];
 
-        public static void UpdateSkillHUD(CCSPlayerController? player, jSkill_PlayerInfo? skillPlayer, string? headerLine, string? centerLine, string? extraLine, bool isDescription)
+        public static void UpdateSkillHUD(CCSPlayerController? player, jSkill_PlayerInfo? skillPlayer, string? headerLine, string? centerLine, string? extraLine, bool isDescription, string? statusLine = null)
         {
             lock (setLock)
             {
@@ -955,6 +956,7 @@ namespace src.player
                     && string.Equals(cache.Header, headerLine, StringComparison.Ordinal)
                     && string.Equals(cache.Center, centerLine, StringComparison.Ordinal)
                     && string.Equals(cache.Extra, extraLine, StringComparison.Ordinal)
+                    && string.Equals(cache.Status, statusLine, StringComparison.Ordinal)
                     && string.Equals(cache.Notice, notice, StringComparison.Ordinal))
                 {
                     player.PrintToCenterHtml(cache.Content);
@@ -975,20 +977,24 @@ namespace src.player
                     ? ""
                     : $"<br>{emptySymbol}<font class='fontSize-{extraLineSize}' color='{(isDescription ? config.SkillDescriptionLineColor : config.InfoLineColor)}'>{extraLine}</font>{emptySymbol}";
 
-                // The centre HTML box is anchored at its bottom: every empty line appended below the text lifts it.
-                // The notice is ready-made HTML (see SkillUtils.NoticeHtml).
-                string noticeLine = string.IsNullOrWhiteSpace(notice) ? "" : $"<br>{emptySymbol2}{notice}{emptySymbol2}";
+                // Cooldown / status text (a skill's PrintHTML) on its own line under the description.
+                string statusHtml = string.IsNullOrWhiteSpace(statusLine) || string.IsNullOrEmpty(config.InfoLineSize)
+                    ? ""
+                    : $"<br>{emptySymbol}<font class='fontSize-{config.InfoLineSize}' color='{config.InfoLineColor}'>{statusLine}</font>{emptySymbol}";
 
-                // The box has a limited height: with extra lines (two skills, a notice) fewer lift lines are added
-                // so the top of the text is never pushed out of view.
-                int extraLines = Math.Max(0, (infoLine + skillLine + remainingLine + noticeLine).Split("<br>").Length - 3);
+                // The notice (retakes site call, plant prompt) is ready-made HTML and sits at the TOP of the box,
+                // above the skill, so it reads as a separate banner and never covers the skill text.
+                string noticeLine = string.IsNullOrWhiteSpace(notice) ? "" : $"{emptySymbol2}{notice}{emptySymbol2}<br>";
+
+                // The centre HTML box is anchored at its bottom and has a limited height: with extra lines fewer
+                // lift lines are added so the top of the text is never pushed out of view.
+                int extraLines = Math.Max(0, (noticeLine + infoLine + skillLine + remainingLine + statusHtml).Split("<br>").Length - 3);
                 int liftLines = Math.Max(0, config.VerticalOffsetLines - extraLines);
                 string lift = liftLines > 0
                     ? string.Concat(Enumerable.Repeat("<br><font class='fontSize-m'> </font>", liftLines))
                     : "";
 
-
-                var hudContent = "<jRS/>" + infoLine + skillLine + remainingLine + noticeLine + lift;
+                var hudContent = "<jRS/>" + noticeLine + infoLine + skillLine + remainingLine + statusHtml + lift;
 
                 if (skillPlayer != null)
                 {
@@ -998,6 +1004,7 @@ namespace src.player
                     cache.Header = headerLine;
                     cache.Center = centerLine;
                     cache.Extra = extraLine;
+                    cache.Status = statusLine;
                     cache.Notice = notice;
                     cache.IsDescription = isDescription;
                     cache.Content = hudContent;

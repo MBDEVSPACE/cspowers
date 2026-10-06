@@ -18,7 +18,7 @@
   "SkillTimeBeforeStart": 7.0,
   "SkillHudDuration": -1.0,
   "SkillDescriptionDuration": 7.0,
-  "DisplayAlwaysDescription": false,
+  "DisplayAlwaysDescription": true,
   "DisableSpectateHUD": false,
   "HideHudForOtherPlugins": true,
   "EnableFlashingHtmlHudFix": false,
