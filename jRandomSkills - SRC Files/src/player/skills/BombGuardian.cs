@@ -29,7 +29,7 @@ namespace src.player.skills
 
         private static Vector? GetBombOrigin()
         {
-            return Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault(b => b != null && b.IsValid)?.AbsOrigin;
+            return src.utils.PlayerManager.GetPlantedBomb()?.AbsOrigin;
         }
 
         public static void OnTick()

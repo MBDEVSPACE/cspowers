@@ -42,6 +42,27 @@ namespace src.player.skills
             }
         }
 
+        // Agent-model plugins and respawns reset the model scale; put it back every half second.
+        public static void OnTick()
+        {
+            if (Server.TickCount % 32 != 0) return;
+
+            foreach (var player in PlayerManager.GetTickPlayers())
+            {
+                if (!Instance.IsPlayerValid(player)) continue;
+                var playerInfo = PlayerManager.GetPlayerByIndex(player.Index);
+                if (playerInfo?.HasSkill(skillName) != true || playerInfo.SkillChance is not float expected || expected <= 0f) continue;
+
+                var pawn = player.PlayerPawn?.Value;
+                if (pawn == null || !pawn.IsValid || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+
+                var skeleton = pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance();
+                if (skeleton == null || Math.Abs(skeleton.Scale - expected) < 0.01f) continue;
+
+                SkillUtils.ChangePlayerScale(player, expected);
+            }
+        }
+
         public static void DisableSkill(CCSPlayerController player)
         {
             var playerInfo = PlayerManager.GetPlayerByIndex(player!.Index);

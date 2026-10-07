@@ -8,7 +8,8 @@ public class TeamSettings
     public float TerroristRatio { get; set; } = 0.45f;
 
     [JsonPropertyName("RoundsToScramble")]
-    public int RoundsToScramble { get; set; } = 5;
+    // Either team winning this many rounds in a row scrambles the teams.
+    public int RoundsToScramble { get; set; } = 4;
 
     [JsonPropertyName("IsScrambleEnabled")]
     public bool IsScrambleEnabled { get; set; } = true;

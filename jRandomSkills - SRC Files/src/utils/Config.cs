@@ -194,6 +194,9 @@ namespace src.utils
             // Skills that are loaded but never drawn; admins hand them out with css_setskill (test skills).
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> AdminOnlySkills { get; set; } = ["GuidedBullet"];
+            // Put a joining player straight onto the smaller team (no team menu). With retakes on, the retakes
+            // queue does this (QueueSettings.ShouldAutoJoinGame in retakes.json); this covers retakes off.
+            public bool AutoAssignTeamOnJoin { get; set; } = true;
 
             public SettingsModel()
             {
@@ -434,6 +437,64 @@ namespace src.utils
             public InstadefuseModuleSettings Instadefuse { get; set; } = new();
             public ClutchAnnounceModuleSettings ClutchAnnounce { get; set; } = new();
             public GunsModuleSettings Guns { get; set; } = new();
+            public WeaponRoundsSettings WeaponRounds { get; set; } = new();
+            public MapVoteSettings MapVote { get; set; } = new();
+        }
+
+        public class WeaponRoundsSettings
+        {
+            // Pistol rounds at the start of every match, and !ak votes for AK / AK headshot / Deagle /
+            // Deagle headshot / AWP only rounds. A passed vote applies from the next round.
+            public bool Enabled { get; set; } = true;
+            public string Alias { get; set; } = "ak, wvote, weaponvote, mode";
+            // The first rounds of a match (after a map change or restart) are pistol rounds.
+            public int PistolRounds { get; set; } = 2;
+            public float VoteSeconds { get; set; } = 20f;
+            public float PercentagesToSuccess { get; set; } = 60f;
+            public int MinimumPlayersToStartVoting { get; set; } = 2;
+            // Wait between two weapon votes.
+            public float CooldownSeconds { get; set; } = 60f;
+            // Wait before the same player may start another weapon vote.
+            public float PlayerCooldownSeconds { get; set; } = 180f;
+            // How many rounds a voted mode lasts; 0 keeps it until the next vote (vote "Normal rounds" to end it).
+            public int ModeDurationRounds { get; set; } = 0;
+            // Skills that hand out guns or change the weapon rules; left out of the draw during pistol / voted rounds.
+            [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> DisabledSkills { get; set; } =
+            [
+                "RandomWeapon", "SniperElite", "GuidedBullet", "WeaponsSwap", "Glaz", "Zeus", "LongZeus", "PrimaryBan",
+                "TakeAmmo", "Disarmament", "BlastShot", "ThrowingKnife", "Grenadier", "Smoker", "Scavenger", "InfiniteAmmo",
+            ];
+        }
+
+        public class MapVoteSettings
+        {
+            // !rtv (rock the vote), !nominate and the end-of-map "change or stay" vote. Only maps in MapPool are offered.
+            public bool Enabled { get; set; } = true;
+            public string RtvAlias { get; set; } = "rtv, rockthevote";
+            public string NominateAlias { get; set; } = "nominate, nom";
+            public string NextMapAlias { get; set; } = "nextmap";
+            // Competitive maps shipped with CS2. Maps not installed on the server are dropped with a console note.
+            [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> MapPool { get; set; } =
+            [
+                "de_dust2", "de_mirage", "de_inferno", "de_nuke", "de_overpass", "de_ancient", "de_anubis", "de_vertigo", "de_train",
+            ];
+            // Workshop maps in the pool: name -> workshop ID (host_workshop_map). Leave the ID empty to skip the map.
+            [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, string> WorkshopMaps { get; set; } = new()
+            {
+                ["de_cache"] = "",
+            };
+            public float RtvPercentage { get; set; } = 60f;
+            public int MinimumPlayersToRtv { get; set; } = 2;
+            public float MapVoteSeconds { get; set; } = 20f;
+            public int MapsInVote { get; set; } = 5;
+            // Round (counting from 1) at which players vote to change the map or stay; 0 turns it off.
+            public int EndOfMapVoteRound { get; set; } = 27;
+            public float EndOfMapVoteSeconds { get; set; } = 25f;
+            // Seconds between a passed !rtv map vote and the map change.
+            public float ChangeDelaySeconds { get; set; } = 5f;
         }
 
         public class GunsModuleSettings
@@ -473,11 +534,16 @@ namespace src.utils
             public bool DisableIncompatibleSkills { get; set; } = true;
             // Keep the game's "The bomb has been planted" banner off the players' screens (it covers the skill HUD).
             public bool HideBombPlantedAlert { get; set; } = true;
+            // Round-start site call as a picture (https URL to a PNG/JPG) instead of the "SITE A" text; one per site.
+            // Leave empty to keep the text banner.
+            public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
+            public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
+            public float SiteBannerSeconds { get; set; } = 4f;
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> IncompatibleSkills { get; set; } =
             [
                 "AreaReaper", "Bankrupt", "Bounty", "C4Camouflage", "ChillOut", "EnemySpawn", "ExpensiveAmmo",
-                "HotBomb", "MoneySwap", "Pickpocket", "Planter", "Retreat", "ReturnToSender", "RichBoy",
+                "HotBomb", "MoneySwap", "Pickpocket", "Planter", "Retreat", "Saper", "ReturnToSender", "RichBoy",
                 "RobinHood", "ShortBomb", "Watchmaker",
             ];
             // Skills built around the retakes mode; they are only drawn while it runs.

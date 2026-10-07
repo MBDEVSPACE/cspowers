@@ -26,5 +26,7 @@
   "instadefuse.not_possible": "无法立即拆包，存在投掷物威胁！",
   "clutch_announce.prefix": "[{green}Retakes{default}] ",
   "clutch_announce.clutched": "玩家 {green}{0}{default} 完成了一次 1v{1} 残局！",
-  "retakes.plant_now": "你拿着炸弹！现在就安放。"
+  "retakes.plant_now": "你拿着炸弹！现在就安放。",
+
+  "retakes.teams.scramble_ct": "The CTs won {green}{0}{default} rounds in a row. {purple}Teams are being scrambled!"
 }

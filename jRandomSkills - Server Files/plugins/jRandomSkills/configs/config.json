@@ -4,6 +4,7 @@
   "AdminOnlySkills": [
     "GuidedBullet"
   ],
+  "AutoAssignTeamOnJoin": true,
   "GameMode": 3,
   "YourSkillChatInfo": true,
   "KillerSkillChatInfo": true,
@@ -370,6 +371,9 @@
       "Enabled": true,
       "DisableIncompatibleSkills": true,
       "HideBombPlantedAlert": true,
+      "SiteImageA": "https://cdn.michael.cool/d/A.png",
+      "SiteImageB": "https://cdn.michael.cool/d/B.png",
+      "SiteBannerSeconds": 4.0,
       "IncompatibleSkills": [
         "AreaReaper",
         "Bankrupt",
@@ -386,6 +390,7 @@
         "ReturnToSender",
         "RichBoy",
         "RobinHood",
+        "Saper",
         "ShortBomb",
         "Watchmaker"
       ],
@@ -458,6 +463,40 @@
         "weapon_revolver",
         "weapon_elite"
       ]
+    },
+    "WeaponRounds": {
+      "Enabled": true,
+      "Alias": "ak, wvote, weaponvote, mode",
+      "PistolRounds": 2,
+      "VoteSeconds": 20.0,
+      "PercentagesToSuccess": 60.0,
+      "MinimumPlayersToStartVoting": 2,
+      "CooldownSeconds": 60.0,
+      "PlayerCooldownSeconds": 180.0,
+      "ModeDurationRounds": 0,
+      "DisabledSkills": [
+        "RandomWeapon", "SniperElite", "GuidedBullet", "WeaponsSwap", "Glaz", "Zeus", "LongZeus", "PrimaryBan",
+        "TakeAmmo", "Disarmament", "BlastShot", "ThrowingKnife", "Grenadier", "Smoker", "Scavenger", "InfiniteAmmo"
+      ]
+    },
+    "MapVote": {
+      "Enabled": true,
+      "RtvAlias": "rtv, rockthevote",
+      "NominateAlias": "nominate, nom",
+      "NextMapAlias": "nextmap",
+      "MapPool": [
+        "de_dust2", "de_mirage", "de_inferno", "de_nuke", "de_overpass", "de_ancient", "de_anubis", "de_vertigo", "de_train"
+      ],
+      "WorkshopMaps": {
+        "de_cache": ""
+      },
+      "RtvPercentage": 60.0,
+      "MinimumPlayersToRtv": 2,
+      "MapVoteSeconds": 20.0,
+      "MapsInVote": 5,
+      "EndOfMapVoteRound": 27,
+      "EndOfMapVoteSeconds": 25.0,
+      "ChangeDelaySeconds": 5.0
     }
   }
 }

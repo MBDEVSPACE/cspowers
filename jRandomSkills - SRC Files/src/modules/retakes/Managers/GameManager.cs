@@ -172,6 +172,7 @@ public class GameManager
     {
         _scrambleNextRound = false;
         _consecutiveRoundsWon = 0;
+        _consecutiveCtRoundsWon = 0;
 
         var shuffledActivePlayers = PlayerHelper.Shuffle(QueueManager.ActivePlayers.ToList(), new Random());
 
@@ -266,6 +267,7 @@ public class GameManager
     private void TerroristRoundWin()
     {
         _consecutiveRoundsWon++;
+        _consecutiveCtRoundsWon = 0;
 
         var shouldScrambleNow = _isScrambleEnabled && _consecutiveRoundsWon == _consecutiveRoundWinsToScramble;
         var roundsLeftToScramble = _consecutiveRoundWinsToScramble - _consecutiveRoundsWon;
@@ -290,6 +292,8 @@ public class GameManager
         }
     }
 
+    private int _consecutiveCtRoundsWon;
+
     private void CounterTerroristRoundWin()
     {
         if (_consecutiveRoundsWon >= 3)
@@ -300,6 +304,16 @@ public class GameManager
         }
 
         _consecutiveRoundsWon = 0;
+
+        // A CT streak scrambles too (the stock plugin only counted T wins), so one stacked side never runs the server.
+        _consecutiveCtRoundsWon++;
+        if (_isScrambleEnabled && _consecutiveCtRoundsWon >= _consecutiveRoundWinsToScramble)
+        {
+            Server.PrintToChatAll($"{_plugin.Localizer["retakes.prefix"]} {_plugin.Localizer["retakes.teams.scramble_ct", _consecutiveCtRoundsWon]}");
+            Logger.LogInfo("GameManager", $"Scrambling teams after {_consecutiveCtRoundsWon} CT wins");
+            ScrambleTeams();
+            return;
+        }
 
         var targetNumTerrorists = QueueManager.GetTargetNumTerrorists();
         var sortedCounterTerroristPlayers = GetSortedActivePlayers(CsTeam.CounterTerrorist);

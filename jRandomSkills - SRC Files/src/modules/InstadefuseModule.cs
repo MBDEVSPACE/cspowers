@@ -183,7 +183,7 @@ namespace src.modules
 
         private static CPlantedC4? FindPlantedBomb()
         {
-            return Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault(b => b != null && b.IsValid);
+            return src.utils.PlayerManager.GetPlantedBomb();
         }
     }
 }

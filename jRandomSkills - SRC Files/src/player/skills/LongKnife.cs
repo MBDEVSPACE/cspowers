@@ -30,6 +30,13 @@ namespace src.player.skills
 
         public static void LoadSkill()
         {
+            // Without the Shoot_Secondary signature (stale after a CS2 update) the skill would do nothing, so it is
+            // left out of the draw entirely instead of handing players a dead skill.
+            if (Shoot_Secondary == null)
+            {
+                Server.PrintToConsole("[TiredPowers] LongKnife is disabled: the Shoot_Secondary signature does not match this CS2 build.");
+                return;
+            }
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
             Instance.AddToManifest(tracerParticle);
         }
@@ -48,8 +55,15 @@ namespace src.player.skills
         {
             playersInAction.TryAdd(player.Index, 0);
             if (hooked || Shoot_Secondary == null) return;
-            hooked = true;
-            Shoot_Secondary.Hook(ShootSecondary, HookMode.Pre);
+            try
+            {
+                Shoot_Secondary.Hook(ShootSecondary, HookMode.Pre);
+                hooked = true;
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[TiredPowers] LongKnife could not hook Shoot_Secondary: {ex.Message}");
+            }
         }
 
         public static void DisableSkill(CCSPlayerController player)

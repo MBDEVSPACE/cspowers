@@ -57,11 +57,12 @@ namespace src
 
             Instance.RegisterListener<OnServerPrecacheResources>(LoadManifest);
 
-            Task.Run(async () =>
-            {
-                await Task.Delay(3500);
-                PrintInfoToConsole();
-            });
+            // Game-thread timer, not a thread-pool task: nothing in the plugin may touch the game from another thread.
+            AddTimer(3.5f, PrintInfoToConsole);
+
+            // Fewer blocking gen-2 collections on the game thread; a full GC pause of a few hundred ms is enough
+            // to overflow every client's net channel.
+            try { System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.SustainedLowLatency; } catch { }
         }
 
         public override void Unload(bool hotReload)
@@ -97,6 +98,12 @@ namespace src
 
             if (modules.ClutchAnnounce.Enabled)
                 new ClutchAnnounceModule(this).Load();
+
+            if (modules.WeaponRounds.Enabled)
+                WeaponRounds.Load();
+
+            if (modules.MapVote.Enabled)
+                MapVote.Load();
         }
 
         // Skills that don't work in the retakes mode (buying, carrying/planting the bomb, normal spawns),
@@ -114,6 +121,10 @@ namespace src
 
             var retakes = Config.LoadedConfig.Modules.Retakes;
             string name = SkillNames.Get(skill);
+
+            // Pistol / AK / Deagle / AWP rounds: skills that hand out guns stay out.
+            if (WeaponRounds.IsSkillDisabled(name))
+                return true;
 
             if (!Instance.IsRetakesActive)
                 return retakes.RetakesOnlySkills.Contains(name);
@@ -480,6 +491,7 @@ namespace src
         public string? Extra;
         public string? Status;
         public string? Notice;
+        public int LastSentTick;
         public bool IsDescription;
         public string? Content;
     }

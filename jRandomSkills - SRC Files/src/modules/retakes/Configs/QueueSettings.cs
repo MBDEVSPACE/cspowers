@@ -20,10 +20,11 @@ public class QueueSettings
     public bool ShouldRemoveSpectators { get; set; } = true;
 
     [JsonPropertyName("ShouldAutoJoinSpectators")]
-    public bool ShouldAutoJoinSpectators { get; set; } = true;
+    public bool ShouldAutoJoinSpectators { get; set; } = false;
 
+    // Joining players go straight into the game (or the queue when it is full) without the team menu.
     [JsonPropertyName("ShouldAutoJoinGame")]
-    public bool ShouldAutoJoinGame { get; set; } = false;
+    public bool ShouldAutoJoinGame { get; set; } = true;
 
     public List<QueuePriorityFlagConfig> GetPriorityFlags()
     {

@@ -22,5 +22,7 @@
   "retakes.teams.admin_scramble": "{0} включил перемешивание команд со следующего раунда.",
   "clutch_announce.prefix": "[{green}Retakes{default}] ",
   "clutch_announce.clutched": "Игрок {green}{0}{default} вытащил клатч 1v{1}!",
-  "retakes.plant_now": "Бомба у вас! Установите её сейчас."
+  "retakes.plant_now": "Бомба у вас! Установите её сейчас.",
+
+  "retakes.teams.scramble_ct": "The CTs won {green}{0}{default} rounds in a row. {purple}Teams are being scrambled!"
 }

@@ -28,7 +28,7 @@ namespace src.player.skills
             PlayerManager.FillSkillHolders(skillName, holderBuffer);
             if (holderBuffer.Count == 0) return;
 
-            var bombOrigin = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault(b => b != null && b.IsValid)?.AbsOrigin;
+            var bombOrigin = src.utils.PlayerManager.GetPlantedBomb()?.AbsOrigin;
 
             float closest = float.MaxValue;
             bool defusing = false;

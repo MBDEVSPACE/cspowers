@@ -35,7 +35,7 @@ namespace src.player.skills
 
         private static Vector? FindPlantedC4()
         {
-            var plantedBomb = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault();
+            var plantedBomb = src.utils.PlayerManager.GetPlantedBomb();
             if (plantedBomb == null || !plantedBomb.IsValid || plantedBomb.AbsOrigin == null) return null;
             if (!plantedBomb.BombTicking || plantedBomb.BombDefused) return null;
             return new(plantedBomb.AbsOrigin.X, plantedBomb.AbsOrigin.Y, plantedBomb.AbsOrigin.Z);
@@ -44,7 +44,7 @@ namespace src.player.skills
         private static void RemoveBomb()
         {
             plantedC4 = null;
-            var plantedBomb = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault();
+            var plantedBomb = src.utils.PlayerManager.GetPlantedBomb();
             if (plantedBomb != null && plantedBomb.IsValid)
                 plantedBomb.AddEntityIOEvent("Kill", plantedBomb, delay: 0.1f);
             SkillUtils.TerminateRound(CsTeam.CounterTerrorist);

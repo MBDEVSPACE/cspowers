@@ -518,14 +518,12 @@ namespace src.player
         private const double stallThresholdMs = 100.0;
         private static long lastTickTimestamp;
 
+        private static DateTime lastStallConsole = DateTime.MinValue;
+
+        // Always on: a gap of 150 ms or more between two ticks is printed to the console (at most once per 5 s)
+        // together with the plugin's own share of the previous tick, so a stall can be attributed or ruled out.
         private static void ReportStall()
         {
-            if (!PerfLog.Enabled)
-            {
-                lastTickTimestamp = 0;
-                return;
-            }
-
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             long previous = lastTickTimestamp;
             lastTickTimestamp = now;
@@ -533,12 +531,22 @@ namespace src.player
             if (previous == 0) return;
 
             double gapMs = (now - previous) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-            if (gapMs >= stallThresholdMs && !PlayerManager.IsServerIdle())
+            if (gapMs < stallThresholdMs || PlayerManager.IsServerIdle()) return;
+
+            var (tracked, owners) = EntityManager.GetStatistics();
+            string line = $"STALL gap={gapMs:F0}ms tick={Server.TickCount} plugin-last-tick={lastPluginTickMs:F1}ms ({lastSlowest}) tracked={tracked} owners={owners}{PerfContext()}";
+            PerfLog.Info(line);
+
+            if (gapMs >= 150 && (DateTime.Now - lastStallConsole).TotalSeconds >= 5)
             {
-                var (tracked, owners) = EntityManager.GetStatistics();
-                PerfLog.Info($"STALL gap={gapMs:F2}ms tick={Server.TickCount} tracked={tracked} owners={owners}{PerfContext()}");
+                lastStallConsole = DateTime.Now;
+                Server.PrintToConsole($"[TiredPowers] {line}");
             }
         }
+
+        private static double lastPluginTickMs;
+        private static string lastSlowest = "";
+        private static DateTime lastSlowConsole = DateTime.MinValue;
 
         public static string PerfContext()
         {
@@ -572,6 +580,7 @@ namespace src.player
             NoRecoil.RestoreSpread();
 
             long perfStart = PerfLog.Start();
+            long perfStart0 = System.Diagnostics.Stopwatch.GetTimestamp();
             lock (setLock)
             {
                 _activeSkillsSet.Clear();
@@ -589,9 +598,13 @@ namespace src.player
                 bool freeze = SkillUtils.IsFreezeTime();
                 _freezeDisabledSkills ??= BuildFreezeDisabledSkills();
 
+                Skills slowestSkill = Skills.None;
+                double slowestMs = 0;
+
                 foreach (var skill in _activeSkillsList)
                 {
                     if (freeze && _freezeDisabledSkills.Contains(skill)) continue;
+                    long skillStart = System.Diagnostics.Stopwatch.GetTimestamp();
                     try
                     {
                         Instance.SkillAction(_skillNames[skill], "OnTick");
@@ -603,6 +616,19 @@ namespace src.player
                         if (tickFailuresLogged.Add(skill))
                             Server.PrintToConsole($"[TiredPowers] {skill}.OnTick failed: {ex.InnerException?.Message ?? ex.Message}");
                     }
+                    double skillMs = (System.Diagnostics.Stopwatch.GetTimestamp() - skillStart) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                    if (skillMs > slowestMs) { slowestMs = skillMs; slowestSkill = skill; }
+                }
+
+                double totalMs = (System.Diagnostics.Stopwatch.GetTimestamp() - perfStart0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                lastPluginTickMs = totalMs;
+                lastSlowest = slowestSkill == Skills.None ? "-" : $"{slowestSkill} {slowestMs:F1}ms";
+
+                // The plugin's own tick work took long: name the skill. At most one line per 5 s.
+                if (totalMs >= 40 && (DateTime.Now - lastSlowConsole).TotalSeconds >= 5)
+                {
+                    lastSlowConsole = DateTime.Now;
+                    Server.PrintToConsole($"[TiredPowers] SLOW TICK plugin={totalMs:F1}ms slowest={lastSlowest}{PerfContext()}");
                 }
             }
             PerfLog.Sample("OnTick(skills)", perfStart);
@@ -662,6 +688,22 @@ namespace src.player
                                             .Replace("{SKILLS_COUNT}", $" {ChatColors.Red}{SkillData.Skills.Count - 1}{ChatColors.Green}", StringComparison.OrdinalIgnoreCase));
 
                 ServerInfo.SendTo(player);
+
+                // Retakes off: put the player on the smaller team instead of leaving them in the team menu
+                // (with retakes on, its queue handles joining).
+                if (Config.LoadedConfig.AutoAssignTeamOnJoin && !Instance.IsRetakesActive && !player.IsBot)
+                {
+                    Instance.AddTimer(1.0f, () =>
+                    {
+                        if (player == null || !player.IsValid || player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist) return;
+
+                        var players = Utilities.GetPlayers().Where(p => p != null && p.IsValid && !p.IsHLTV).ToList();
+                        int ts = players.Count(p => p.Team == CsTeam.Terrorist);
+                        int cts = players.Count(p => p.Team == CsTeam.CounterTerrorist);
+                        player.ChangeTeam(ts < cts ? CsTeam.Terrorist : cts < ts ? CsTeam.CounterTerrorist : (Instance.Random.Next(2) == 0 ? CsTeam.Terrorist : CsTeam.CounterTerrorist));
+                    }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
+                }
+
                 return HookResult.Continue;
             }
         }
@@ -839,7 +881,7 @@ namespace src.player
                 if ((pressed & skillButton) == 0) return;
 
                 if (SkillUtils.HasMenu(player)) return;
-                if (src.modules.GunsModule.IsExternalMenuOpen(player)) return;
+                if (src.modules.GunsModule.IsExternalMenuOpen(player) || src.menu.SimpleMenu.IsExternalMenuOpen(player)) return;
 
                 var playerInfo = PlayerManager.GetPlayerByIndex(player!.Index);
                 if (playerInfo == null || playerInfo.IsDrawing) return;
@@ -960,7 +1002,15 @@ namespace src.player
                     && string.Equals(cache.Status, statusLine, StringComparison.Ordinal)
                     && string.Equals(cache.Notice, notice, StringComparison.Ordinal))
                 {
-                    player.PrintToCenterHtml(cache.Content);
+                    // Unchanged content: refresh 4 times a second, not every HUD frame. The centre hint stays on screen
+                    // well past that, and fewer reliable messages per player means no net-channel overflow.
+                    // A picture (site banner image) only stays up when it is re-sent every tick.
+                    int resendTicks = cache.Content.Contains("<img", StringComparison.Ordinal) ? 1 : 16;
+                    if (Server.TickCount - cache.LastSentTick >= resendTicks)
+                    {
+                        cache.LastSentTick = Server.TickCount;
+                        player.PrintToCenterHtml(cache.Content);
+                    }
                     return;
                 }
 
@@ -1034,6 +1084,7 @@ namespace src.player
                     cache.Notice = notice;
                     cache.IsDescription = isDescription;
                     cache.Content = hudContent;
+                    cache.LastSentTick = Server.TickCount;
                 }
 
                 player.PrintToCenterHtml(hudContent);

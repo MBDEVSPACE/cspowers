@@ -22,19 +22,19 @@
       }
     ],
     "ShouldRemoveSpectators": true,
-    "ShouldAutoJoinSpectators": true,
-    "ShouldAutoJoinGame": false
+    "ShouldAutoJoinSpectators": false,
+    "ShouldAutoJoinGame": true
   },
   "TeamSettings": {
     "TerroristRatio": 0.45,
-    "RoundsToScramble": 5,
+    "RoundsToScramble": 4,
     "IsScrambleEnabled": true,
     "IsBalanceEnabled": true,
     "ShouldForceEvenTeamsWhenPlayerCountIsMultipleOf10": true,
     "ShouldPreventTeamChangesMidRound": true
   },
   "MapConfigSettings": {
-    "EnableBombsiteAnnouncementVoices": false,
+    "EnableBombsiteAnnouncementVoices": true,
     "EnableBombsiteAnnouncementCenter": true,
     "EnableFallbackBombsiteAnnouncement": true,
     "EnablePlantLocationAnnouncement": false

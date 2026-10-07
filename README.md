@@ -55,7 +55,15 @@ This build also includes three plugins by [B3none](https://github.com/B3none), s
 
 Each one can be switched off under `Modules` in `configs/config.json`. While retakes is running, skills that need money, carrying or planting the bomb, normal spawns or the round timer are left out of the draw (`Modules.Retakes.IncompatibleSkills`). Six skills are made for retakes: Bomb Guardian, Bomb Sense and Booby Trap (T), Defuse Shield and Entry Rush (CT) and Clutch Master (both). Bomb Guardian and Bomb Sense are only drawn while retakes runs (`Modules.Retakes.RetakesOnlySkills`), and `!swap`/`!shuffle` are disabled because retakes manages the teams.
 
-**Weapons:** there is no buying in retakes. Type `!guns` to open a menu and pick the T rifle, CT rifle and pistol you get every round (or `!guns ak47 deagle`); the choice is saved per player in `configs/guns.json`. The menu is drawn by [CS2MenuManager](https://github.com/schwarper/CS2MenuManager) when it is installed (players switch its style with `!mm`), otherwise by the built-in WASD menu. The bombsite is announced in chat and on screen at round start and again after the plant.
+**Weapons:** there is no buying in retakes. Type `!guns` to open a menu and pick the T rifle, CT rifle and pistol you get every round (or `!guns ak47 deagle`); the choice is saved per player in `configs/guns.json`. The menu is drawn by [CS2MenuManager](https://github.com/schwarper/CS2MenuManager) when it is installed (players switch its style with `!mm`), otherwise by the built-in WASD menu. The bombsite is announced in chat, on screen and by an agent voice line (`MapConfigSettings.EnableBombsiteAnnouncementVoices`, on by default; players mute it with `!voices`) at round start, and on screen again after the plant.
+
+**Site banner as a picture:** set `Modules.Retakes.SiteImageA` / `SiteImageB` in `config.json` to an https URL of a PNG or JPG and the round-start site call shows that picture at the top of the screen for `SiteBannerSeconds` (same `<img>` trick as [CS2-CenterAdvert](https://github.com/daffyyyy/CS2-CenterAdvert)). Leave them empty for the big "SITE A" / "SITE B" text.
+
+**Pistol rounds and weapon votes** (`Modules.WeaponRounds`): the first `PistolRounds` rounds of every match (default 2) are pistol rounds (Glock / USP-S + kevlar). `!ak` opens a menu to start a vote for **AK-47 only**, **AK-47 headshot only**, **Deagle only**, **Deagle headshot only** or **AWP only** rounds (`!ak awp` skips the menu; a player may start a vote once every `PlayerCooldownSeconds`, default 3 min); everyone gets a Yes/No menu, and when `PercentagesToSuccess` of the players agree the mode starts from the next round and stays until a vote for "Normal rounds" (or `ModeDurationRounds` rounds). In headshot modes gun hits anywhere but the head do no damage. Skills that hand out guns (`DisabledSkills`: Random Weapon, Sniper Elite, Zeus, Weapon Swap, ...) are left out of the draw while a mode runs.
+
+**Map votes** (`Modules.MapVote`): `!rtv` asks for a map change; when `RtvPercentage` of the players agree a map vote opens with up to `MapsInVote` maps from `MapPool` (competitive maps only: Dust2, Mirage, Inferno, Nuke, Overpass, Ancient, Anubis, Vertigo, Train; maps missing on the server are skipped with a console note). `!nominate [map]` puts a map in the next vote, `!nextmap` shows the decision. At round `EndOfMapVoteRound` (default 27) everyone votes to **stay** or **change map**; a change runs the map vote and the winner loads after the match. Workshop maps go in `WorkshopMaps` as name → workshop ID (`"de_cache": "<id>"`).
+
+**Teams:** with `QueueSettings.ShouldAutoJoinGame` (now the default) a joining player goes straight into the game, or the queue when it is full, with no team menu. Either team winning `TeamSettings.RoundsToScramble` rounds in a row (default 4) scrambles the teams.
 
 Install: copy the `shared` folder along with `plugins` and `gamedata`, and remove any standalone RetakesPlugin, InstadefusePlugin or ClutchAnnouncePlugin so nothing runs twice.
 
@@ -312,6 +320,10 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so comb
 | `!botplace [slot] [godmode]` | `!botplace 2 1` | Teleport a bot to your location | `@jRandomSkills/admin` |
 | `!next_skill <name/steamID> [idx]` | `!next_skill Juzlus` | Switch skill for a player (next, previous -1, or specific idx) | `@jRandomSkills/admin` |
 | `!plantedbomb [time]` | `!plantedbomb 35` | Spawn a planted C4 bomb at your position with custom or default (40s) detonation time | `@jRandomSkills/admin` |
+| `!ak [mode]` | `!ak` / `!ak awp` | Vote for AK / AK headshot / Deagle / Deagle headshot / AWP only rounds (menu, or Yes/No while a vote runs) | - |
+| `!rtv` | `!rtv` | Rock the vote: ask for a map change; opens the map vote once enough players agree | - |
+| `!nominate [map]` | `!nominate mirage` | Put a map from the pool into the next map vote | - |
+| `!nextmap` | `!nextmap` | Show the map chosen for after this match | - |
 | `!sethealth <amount>` | `!sethealth 150` | Set a specific health amount for yourself | `@jRandomSkills/admin` |
 | `!reload` | `!reload` | Reload translations | - |
 

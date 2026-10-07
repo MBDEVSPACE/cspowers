@@ -63,7 +63,22 @@ public class AnnouncementService
     {
         // Round-start alert: the centre box shows only this banner, lifted towards the top of the screen, for a
         // few seconds; the skill HUD takes the box back afterwards.
-        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, 6f, exclusive: true);
+        float seconds = Math.Max(1f, src.utils.Config.LoadedConfig.Modules.Retakes.SiteBannerSeconds);
+        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: true);
+    }
+
+    // The banner is a picture when the config has an image URL for the site (same trick as CS2-CenterAdvert:
+    // an <img> inside the centre HTML message), otherwise the big coloured "SITE A" text.
+    private static string BannerHtml(Bombsite bombsite)
+    {
+        var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
+        string image = (bombsite == Bombsite.A ? retakes.SiteImageA : retakes.SiteImageB)?.Trim() ?? "";
+
+        if (image.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || image.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return $"<img src='{image.Replace("'", "%27")}'/>";
+
+        string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
+        return $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>▶  SITE {bombsite}  ◀</font>";
     }
 
     // Chat colour codes are control characters; they show up as junk in a center alert.
@@ -83,8 +98,7 @@ public class AnnouncementService
         // The site call is a round-start alert in the centre HTML box: the box shows only this banner, lifted
         // towards the top of the screen, and the skill HUD takes the box back when it expires.
         var centerText = StripColors(centerAnnouncementMessage);
-        string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
-        var centerHtml = $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>\u25B6\u25B6  SITE {bombsite}  \u25C0\u25C0</font><br><font class='fontSize-m' color='#FFFFFF'>{centerText}</font>";
+        var centerHtml = BannerHtml(bombsite);
 
         foreach (var player in Utilities.GetPlayers())
         {
