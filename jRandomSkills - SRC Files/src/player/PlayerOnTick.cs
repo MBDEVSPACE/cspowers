@@ -53,6 +53,7 @@ namespace src.player
         {
             skills.NoRecoil.RestoreSpread();
             skills.NoRecoil.ForgetSpread();
+            ScreenText.Clear();
             PerfLog.Info("===== MAP END (clean map change) =====");
             Debug.WriteToDebug("===== MAP END (clean map change) =====");
             BotManager.Stop();
