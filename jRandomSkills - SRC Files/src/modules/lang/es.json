@@ -22,5 +22,7 @@
   "retakes.teams.admin_scramble": "{0} Los equipos serán a mezclados en la siguiente ronda.",
   "clutch_announce.prefix": "[{green}Retakes{default}] ",
   "clutch_announce.clutched": "¡El jugador {green}{0}{default} ha ganado un clutch 1v{1}!",
-  "retakes.plant_now": "¡Tienes la bomba! Plántala ahora."
+  "retakes.plant_now": "¡Tienes la bomba! Plántala ahora.",
+
+  "retakes.teams.scramble_ct": "The CTs won {green}{0}{default} rounds in a row. {purple}Teams are being scrambled!"
 }

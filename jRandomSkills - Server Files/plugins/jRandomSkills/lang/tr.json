@@ -26,5 +26,7 @@
   "instadefuse.not_possible": "Bombayı imha etmek mümkün değil, yanıcı tehdidi var!",
   "clutch_announce.prefix": "[{green}Retakes{default}] ",
   "clutch_announce.clutched": "{green}{0}{default} adlı oyuncu 1v{1} clutch yaptı!",
-  "retakes.plant_now": "Bomba sende! Hemen kur."
+  "retakes.plant_now": "Bomba sende! Hemen kur.",
+
+  "retakes.teams.scramble_ct": "The CTs won {green}{0}{default} rounds in a row. {purple}Teams are being scrambled!"
 }

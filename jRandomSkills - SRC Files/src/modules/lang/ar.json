@@ -24,5 +24,7 @@
   "instadefuse.unsuccessful": "{0} كان على بُعد {darkred}{1} ثوانٍ{default} من نزع القنبلة.",
   "instadefuse.successful": "{0} قام بنزع القنبلة مع تبقي {green}{1} ثوانٍ{default} على القنبلة.",
   "instadefuse.not_possible": "لا يمكن نزع القنبلة فوراً، هناك تهديد بقنبلة يدوية!",
-  "retakes.plant_now": "You have the bomb! Plant it now."
+  "retakes.plant_now": "You have the bomb! Plant it now.",
+
+  "retakes.teams.scramble_ct": "The CTs won {green}{0}{default} rounds in a row. {purple}Teams are being scrambled!"
 }

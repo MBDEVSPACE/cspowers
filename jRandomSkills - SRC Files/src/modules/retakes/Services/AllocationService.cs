@@ -15,6 +15,12 @@ public class AllocationService
 
     public void AllocatePlayer(CCSPlayerController player)
     {
+        // Pistol rounds and voted AK / Deagle / AWP rounds hand out their own kit (no grenades, no !guns choice).
+        if (src.modules.WeaponRounds.TryAllocate(player))
+        {
+            return;
+        }
+
         AllocateEquipment(player);
         AllocateWeapons(player);
         AllocateGrenades(player);

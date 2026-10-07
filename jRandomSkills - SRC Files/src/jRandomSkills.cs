@@ -98,6 +98,12 @@ namespace src
 
             if (modules.ClutchAnnounce.Enabled)
                 new ClutchAnnounceModule(this).Load();
+
+            if (modules.WeaponRounds.Enabled)
+                WeaponRounds.Load();
+
+            if (modules.MapVote.Enabled)
+                MapVote.Load();
         }
 
         // Skills that don't work in the retakes mode (buying, carrying/planting the bomb, normal spawns),
@@ -115,6 +121,10 @@ namespace src
 
             var retakes = Config.LoadedConfig.Modules.Retakes;
             string name = SkillNames.Get(skill);
+
+            // Pistol / AK / Deagle / AWP rounds: skills that hand out guns stay out.
+            if (WeaponRounds.IsSkillDisabled(name))
+                return true;
 
             if (!Instance.IsRetakesActive)
                 return retakes.RetakesOnlySkills.Contains(name);

@@ -91,6 +91,9 @@ namespace src.player
                 CountDamageResolution(info);
                 SkillUtils.TrackHealthBeforeHit(entity, info);
 
+                // Headshot-only rounds: body shots from guns are zeroed before any skill sees them.
+                src.modules.WeaponRounds.OnTakeDamagePre(entity, info);
+
                 object[] args = [entity, info];
                 DispatchOnTakeDamage(entity, info, args);
 
