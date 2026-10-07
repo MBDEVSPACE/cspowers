@@ -59,6 +59,8 @@ public class AnnouncementService
         Logger.LogInfo("Announcement", $"Announced plant location: {locationName}");
     }
 
+    private static bool _screenFallbackNoted;
+
     private static void ShowSiteBanner(CCSPlayerController player, Bombsite bombsite, string bannerHtml, string plainText)
     {
         var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
@@ -71,6 +73,14 @@ public class AnnouncementService
             var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont, retakes.ScreenBannerBackgroundBorder, retakes.ScreenBannerBackgroundBorder);
             if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, style, seconds, src.utils.ScreenText.ParseMethod(retakes.ScreenBannerMethod)))
                 return;
+
+            if (!_screenFallbackNoted)
+            {
+                _screenFallbackNoted = true;
+                Logger.LogWarning("Announcement", src.utils.ScreenText.Available
+                    ? "Screen text could not be shown (player not alive yet or entity creation failed); the HUD banner is used instead."
+                    : "Screen text is unavailable because entity spawning is blocked (EntitySpawnSafety: add the CS2 version to VerifiedGameVersions or set Mode to \"Off\"); the HUD banner is used instead.");
+            }
         }
 
         // Round-start alert in the centre box: only this banner, lifted towards the top of the screen, for a
