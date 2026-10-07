@@ -674,6 +674,22 @@ namespace src.player
 
         private static HookResult PlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
         {
+            // Sign-on work runs while the client's net channel is most fragile; anything slow here is reported.
+            long connectStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            try
+            {
+                return PlayerConnectFullCore(@event);
+            }
+            finally
+            {
+                double ms = System.Diagnostics.Stopwatch.GetElapsedTime(connectStart).TotalMilliseconds;
+                if (ms >= 20)
+                    Server.PrintToConsole($"[TiredPowers] SLOW CONNECT: the plugin's connect handler took {ms:0}ms for {@event.Userid?.PlayerName ?? "?"} (should be <5ms).");
+            }
+        }
+
+        private static HookResult PlayerConnectFullCore(EventPlayerConnectFull @event)
+        {
             lock (setLock)
             {
                 var player = PlayerManager.GetPlayerEvent(@event.Userid);
@@ -730,6 +746,7 @@ namespace src.player
 
                 SkillUtils.ClearCursesFor(leavingIndex);
 
+                ScreenText.Remove(player.Index);
                 PlayerManager.UnregisterPlayer(player.Index);
                 EntityManager.DestroyPlayerEntities(player.Index);
                 SkillUtils.ClearHudSuppression(player.Index);

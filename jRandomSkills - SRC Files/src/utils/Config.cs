@@ -549,7 +549,7 @@ namespace src.utils
             public bool RepeatSiteCallAfterPlant { get; set; } = false;
             // Screen text placement, CS2-GameHUD / InfoTop convention: X right, Y up, Z distance from the eyes.
             // InfoTop's defaults are X 0, Y 40, Z 80 with font 20 and 0.25 units per pixel.
-            public string ScreenBannerMethod { get; set; } = "Pawn"; // Pawn | Orient | ViewModel
+            public string ScreenBannerMethod { get; set; } = "Pawn"; // Pawn | Orient
             public float ScreenBannerX { get; set; } = 0f;
             public float ScreenBannerY { get; set; } = 40f;
             public float ScreenBannerZ { get; set; } = 80f;
