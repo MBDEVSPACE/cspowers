@@ -10,28 +10,43 @@ using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 namespace src.utils
 {
     // Text drawn at a fixed spot on one player's screen without using the centre message slot: a point_worldtext
-    // entity parented to a spare, predicted view-model slot of the player, so the client moves it with the camera
-    // itself (no per-tick teleport, no lag, no net traffic after the spawn). The same trick the CS2 screen-menu
-    // plugins use. Only the owner receives the entity.
+    // entity kept in front of the eyes, the way CS2-GameHUD (used by InfoTop and similar plugins) does it. Only
+    // the owner receives the entity. Three ways to hold it in place (ScreenTextMethod):
+    //   Pawn      - parented to the player pawn and re-aimed from the view angles every tick (GameHUD default).
+    //   Orient    - parented to a point_orient that follows the eyes on the client (GameHUD "method" cvar).
+    //   ViewModel - parented to a spare predicted view-model slot (screen-menu plugins).
     public static class ScreenText
     {
+        public enum Method { Pawn, Orient, ViewModel }
+
+        public readonly record struct Style(
+            float X, float Y, float Z, float FontSize, float UnitsPerPx, string? FontName,
+            float BackgroundBorderHeight = 0f, float BackgroundBorderWidth = 0f);
+
         private sealed class Banner
         {
             public uint PlayerIndex;
             public uint EntityIndex;
+            public uint OrientIndex;
             public DateTime Until;
+            public Method Method;
+            public Style Style;
         }
 
         private static readonly ConcurrentDictionary<uint, Banner> banners = [];
-        private static bool offsetsBroken;
+        private static bool viewModelBroken;
 
-        // Distance in front of the eyes; the text is drawn at this depth so it never clips into walls.
-        private const float Depth = 7f;
+        public static bool Available => !EntitySafety.SpawningBlocked;
 
-        public static bool Available => !EntitySafety.SpawningBlocked && !offsetsBroken;
+        public static Method ParseMethod(string? name) => name?.Trim().ToLowerInvariant() switch
+        {
+            "orient" => Method.Orient,
+            "viewmodel" => Method.ViewModel,
+            _ => Method.Pawn,
+        };
 
-        // up: height on screen in world units at Depth (0 = centre, about 2.5 = top edge); right: sideways offset.
-        public static bool Show(CCSPlayerController? player, string text, Color color, float fontSize = 80f, float up = 2.0f, float right = 0f, float seconds = 4f, string? fontName = null)
+        // X: right, Y: up, Z: distance in front of the eyes (world units at that distance, GameHUD convention).
+        public static bool Show(CCSPlayerController? player, string text, Color color, Style style, float seconds, Method method = Method.Pawn)
         {
             if (player == null || !player.IsValid || player.IsBot) return false;
             if (!Available) return false;
@@ -41,52 +56,124 @@ namespace src.utils
 
             Hide(player.Index);
 
-            CBaseEntity? viewModel;
+            if (method == Method.ViewModel && viewModelBroken) method = Method.Pawn;
+
+            CBaseEntity? parent = null;
+            uint orientIndex = 0;
             try
             {
-                viewModel = EnsureViewModel(pawn);
+                switch (method)
+                {
+                    case Method.ViewModel:
+                        parent = EnsureViewModel(pawn);
+                        break;
+                    case Method.Orient:
+                        parent = CreateOrient(pawn);
+                        orientIndex = parent?.Index ?? 0;
+                        break;
+                    default:
+                        parent = pawn;
+                        break;
+                }
             }
             catch (Exception ex)
             {
-                offsetsBroken = true;
-                Server.PrintToConsole($"[TiredPowers] Screen text is unavailable on this build ({ex.Message}); site calls use the centre HUD banner.");
-                return false;
+                if (method == Method.ViewModel)
+                {
+                    viewModelBroken = true;
+                    Server.PrintToConsole($"[TiredPowers] Screen text: view-model method unavailable on this build ({ex.Message}); using the pawn method.");
+                    parent = pawn;
+                    method = Method.Pawn;
+                }
+                else
+                {
+                    Server.PrintToConsole($"[TiredPowers] Screen text failed: {ex.Message}");
+                    return false;
+                }
             }
-            if (viewModel == null) return false;
+            if (parent == null) return false;
 
             var ent = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext");
             if (ent == null || !ent.IsValid) return false;
 
             ent.MessageText = text;
             ent.Enabled = true;
-            ent.FontSize = fontSize;
-            if (!string.IsNullOrWhiteSpace(fontName)) ent.FontName = fontName;
+            ent.FontSize = style.FontSize;
+            if (!string.IsNullOrWhiteSpace(style.FontName)) ent.FontName = style.FontName;
             ent.Color = color;
             ent.Fullbright = true;
-            ent.WorldUnitsPerPx = 0.0075f;
-            ent.DepthOffset = 0f;
+            ent.WorldUnitsPerPx = style.UnitsPerPx;
             ent.JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER;
-            ent.JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_CENTER;
+            ent.JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP;
             ent.ReorientMode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE;
+            if (style.BackgroundBorderHeight != 0f || style.BackgroundBorderWidth != 0f)
+            {
+                ent.DrawBackground = true;
+                ent.BackgroundBorderHeight = style.BackgroundBorderHeight;
+                ent.BackgroundBorderWidth = style.BackgroundBorderWidth;
+            }
 
-            // Placed relative to the eyes once; the parent (view model) carries it with the camera from then on.
-            QAngle eyeAngles = pawn.EyeAngles;
-            Vector eye = new(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
-            Vector forward = SkillUtils.GetForwardVector(eyeAngles);
-            Vector upVec = SkillUtils.GetForwardVector(new QAngle(eyeAngles.X - 90f, eyeAngles.Y, 0));
-            Vector rightVec = SkillUtils.GetForwardVector(new QAngle(0, eyeAngles.Y - 90f, 0));
-
-            Vector pos = eye + forward * Depth + upVec * up + rightVec * right;
-            QAngle angles = new(0, eyeAngles.Y + 270f, 90f - eyeAngles.X);
-
-            ent.Teleport(pos, angles);
             ent.DispatchSpawn();
-            ent.AcceptInput("SetParent", viewModel, null, "!activator");
+            ent.AcceptInput("SetParent", parent, null, "!activator");
 
-            banners[player.Index] = new Banner { PlayerIndex = player.Index, EntityIndex = ent.Index, Until = DateTime.Now.AddSeconds(seconds) };
+            var banner = new Banner { PlayerIndex = player.Index, EntityIndex = ent.Index, OrientIndex = orientIndex, Until = DateTime.Now.AddSeconds(seconds), Method = method, Style = style };
+            Place(pawn, ent, banner, parent);
+
+            banners[player.Index] = banner;
             EntityManager.RegisterEntity(ent.Index, player.Index, "screen_text");
+            if (orientIndex != 0) EntityManager.RegisterEntity(orientIndex, player.Index, "screen_text_orient");
             src.player.Event.EnableTransmit();
             return true;
+        }
+
+        private static void Place(CCSPlayerPawn pawn, CPointWorldText ent, Banner banner, CBaseEntity? parent)
+        {
+            QAngle angles;
+            Vector origin;
+
+            if (banner.Method == Method.Orient && parent != null && parent.IsValid && parent.AbsRotation != null && parent.AbsOrigin != null)
+            {
+                angles = parent.AbsRotation;
+                origin = new Vector(parent.AbsOrigin.X, parent.AbsOrigin.Y, parent.AbsOrigin.Z);
+            }
+            else
+            {
+                if (pawn.AbsOrigin == null) return;
+                angles = banner.Method == Method.ViewModel ? pawn.EyeAngles : pawn.V_angle;
+                origin = new Vector(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
+            }
+
+            AngleVectors(angles, out var forward, out var right, out var up);
+            var s = banner.Style;
+            Vector pos = origin + forward * s.Z + right * s.X + up * s.Y;
+            QAngle textAngles = new(0, angles.Y + 270f, 90f - angles.X);
+            ent.Teleport(pos, textAngles);
+        }
+
+        private static void AngleVectors(QAngle angles, out Vector forward, out Vector right, out Vector up)
+        {
+            (float sy, float cy) = MathF.SinCos(angles.Y * MathF.PI / 180f);
+            (float sp, float cp) = MathF.SinCos(angles.X * MathF.PI / 180f);
+            forward = new Vector(cp * cy, cp * sy, -sp);
+            right = new Vector(sy, -cy, 0);
+            up = new Vector(sp * cy, sp * sy, cp);
+        }
+
+        // A point_orient that turns with the player's eyes on the client; the text rides on it.
+        private static CBaseEntity? CreateOrient(CCSPlayerPawn pawn)
+        {
+            if (pawn.AbsOrigin == null) return null;
+
+            var orient = Utilities.CreateEntityByName<CPointOrient>("point_orient");
+            if (orient == null || !orient.IsValid) return null;
+
+            orient.Active = true;
+            orient.GoalDirection = PointOrientGoalDirectionType_t.eEyesForward;
+            orient.DispatchSpawn();
+            orient.Teleport(new Vector(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z));
+            orient.AcceptInput("SetParent", pawn, null, "!activator");
+            orient.AcceptInput("SetTarget", pawn, null, "!activator");
+            return orient;
         }
 
         // The third view-model slot is unused by the game; a predicted_viewmodel entity there survives weapon
@@ -121,7 +208,10 @@ namespace src.utils
         public static void Hide(uint playerIndex)
         {
             if (banners.TryRemove(playerIndex, out var banner))
+            {
                 EntityManager.DestroyEntity(banner.EntityIndex, 0f);
+                if (banner.OrientIndex != 0) EntityManager.DestroyEntity(banner.OrientIndex, 0f, hideFromTransmit: false);
+            }
         }
 
         public static void HideAll()
@@ -130,7 +220,7 @@ namespace src.utils
                 Hide(index);
         }
 
-        // Expiry and dead owners only; the client does the positioning.
+        // Expiry and dead owners; the pawn method also re-aims the text from the current view angles.
         public static void OnTick()
         {
             if (banners.IsEmpty) return;
@@ -139,10 +229,17 @@ namespace src.utils
             {
                 var player = Utilities.GetPlayerFromIndex((int)banner.PlayerIndex);
                 var pawn = player?.PlayerPawn.Value;
+                var ent = Utilities.GetEntityFromIndex<CPointWorldText>((int)banner.EntityIndex);
 
-                if (player == null || !player.IsValid || pawn == null || !pawn.IsValid
+                if (player == null || !player.IsValid || pawn == null || !pawn.IsValid || ent == null || !ent.IsValid
                     || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE || DateTime.Now > banner.Until)
+                {
                     Hide(banner.PlayerIndex);
+                    continue;
+                }
+
+                if (banner.Method == Method.Pawn)
+                    Place(pawn, ent, banner, pawn);
             }
         }
 

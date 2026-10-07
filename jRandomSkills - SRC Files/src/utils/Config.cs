@@ -543,10 +543,17 @@ namespace src.utils
             // slot, so it never touches the skill text and costs no HUD traffic). "Html": the centre HUD banner
             // (needed for the SiteImage pictures). Screen falls back to Html when entity spawning is blocked.
             public string SiteBannerStyle { get; set; } = "Screen";
-            public float ScreenBannerFontSize { get; set; } = 80f;
-            // Height on screen: 0 = centre, about 2.5 = top edge.
-            public float ScreenBannerHeight { get; set; } = 2.0f;
-            public string ScreenBannerFont { get; set; } = "";
+            // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
+            public bool SiteCallCtOnly { get; set; } = true;
+            // Screen text placement, CS2-GameHUD / InfoTop convention: X right, Y up, Z distance from the eyes.
+            // InfoTop's defaults are X 0, Y 40, Z 80 with font 20 and 0.25 units per pixel.
+            public string ScreenBannerMethod { get; set; } = "Pawn"; // Pawn | Orient | ViewModel
+            public float ScreenBannerX { get; set; } = 0f;
+            public float ScreenBannerY { get; set; } = 40f;
+            public float ScreenBannerZ { get; set; } = 80f;
+            public float ScreenBannerFontSize { get; set; } = 40f;
+            public float ScreenBannerUnitsPerPx { get; set; } = 0.25f;
+            public string ScreenBannerFont { get; set; } = "Arial Bold";
             public string ScreenBannerColorA { get; set; } = "#FF5050";
             public string ScreenBannerColorB { get; set; } = "#50A0FF";
             // true: the banner is alone on screen, lifted to the top, and the skill text comes back when it ends.

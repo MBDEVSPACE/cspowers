@@ -68,7 +68,8 @@ public class AnnouncementService
         if (retakes.SiteBannerStyle.Trim().Equals("Screen", StringComparison.OrdinalIgnoreCase))
         {
             var color = ParseColor(bombsite == Bombsite.A ? retakes.ScreenBannerColorA : retakes.ScreenBannerColorB, bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 80, 80) : System.Drawing.Color.FromArgb(80, 160, 255));
-            if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, retakes.ScreenBannerFontSize, retakes.ScreenBannerHeight, 0f, seconds, retakes.ScreenBannerFont))
+            var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont);
+            if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, style, seconds, src.utils.ScreenText.ParseMethod(retakes.ScreenBannerMethod)))
                 return;
         }
 
@@ -122,8 +123,16 @@ public class AnnouncementService
         var centerText = StripColors(centerAnnouncementMessage);
         var centerHtml = BannerHtml(bombsite);
 
+        bool ctOnly = src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallCtOnly;
+
         foreach (var player in Utilities.GetPlayers())
         {
+            // The Ts spawn on the site; the call is for the CTs (and spectators) unless configured otherwise.
+            if (ctOnly && player.Team == CounterStrikeSharp.API.Modules.Utils.CsTeam.Terrorist)
+            {
+                continue;
+            }
+
             if (!onlyCenter)
             {
                 player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
