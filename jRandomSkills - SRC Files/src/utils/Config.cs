@@ -539,6 +539,9 @@ namespace src.utils
             public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
             public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
             public float SiteBannerSeconds { get; set; } = 4f;
+            // true: the banner is alone on screen, lifted to the top, and the skill text comes back when it ends.
+            // false: the banner sits above the skill text in the same box, so the skill never disappears.
+            public bool SiteBannerHidesSkill { get; set; } = true;
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> IncompatibleSkills { get; set; } =
             [
@@ -615,6 +618,9 @@ namespace src.utils
             public string NoticeLineColor { get; set; } = "#FFD700";
             // Empty lines under a round-start announcement (site call): more lines push the banner higher on screen.
             public int NoticeLiftLines { get; set; } = 4;
+            // Ticks between two sends of an unchanged HUD (1 = every tick like the original plugin, 6 = the most
+            // before the centre text starts to blink). Fewer sends = less network traffic per player.
+            public int HudResendTicks { get; set; } = 4;
         }
 
         public class LanguageSystem

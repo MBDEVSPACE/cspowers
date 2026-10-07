@@ -153,7 +153,8 @@
     "WSADMenuControllsLineColor3": "green",
     "VerticalOffsetLines": 1,
     "NoticeLineColor": "#FFD700",
-    "NoticeLiftLines": 4
+    "NoticeLiftLines": 4,
+    "HudResendTicks": 4
   },
   "ChatMessage": {
     "MaxWidth": 1280.0,
@@ -374,6 +375,7 @@
       "SiteImageA": "https://cdn.michael.cool/d/A.png",
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
+      "SiteBannerHidesSkill": true,
       "IncompatibleSkills": [
         "AreaReaper",
         "Bankrupt",

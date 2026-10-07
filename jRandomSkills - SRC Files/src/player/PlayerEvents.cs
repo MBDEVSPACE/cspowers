@@ -1002,10 +1002,10 @@ namespace src.player
                     && string.Equals(cache.Status, statusLine, StringComparison.Ordinal)
                     && string.Equals(cache.Notice, notice, StringComparison.Ordinal))
                 {
-                    // Unchanged content: refresh 4 times a second, not every HUD frame. The centre hint stays on screen
-                    // well past that, and fewer reliable messages per player means no net-channel overflow.
-                    // A picture (site banner image) only stays up when it is re-sent every tick.
-                    int resendTicks = cache.Content.Contains("<img", StringComparison.Ordinal) ? 1 : 16;
+                    // Unchanged content: refresh HudResendTicks apart, not every HUD frame (fewer reliable messages per
+                    // player, no net-channel overflow). The centre hint fades about 0.1 s after the last message, so
+                    // more than ~6 ticks between sends makes it blink. A picture only stays up when re-sent every tick.
+                    int resendTicks = cache.Content.Contains("<img", StringComparison.Ordinal) ? 1 : Math.Clamp(config.HudResendTicks, 1, 6);
                     if (Server.TickCount - cache.LastSentTick >= resendTicks)
                     {
                         cache.LastSentTick = Server.TickCount;

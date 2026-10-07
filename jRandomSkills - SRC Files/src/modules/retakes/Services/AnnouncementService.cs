@@ -63,8 +63,9 @@ public class AnnouncementService
     {
         // Round-start alert: the centre box shows only this banner, lifted towards the top of the screen, for a
         // few seconds; the skill HUD takes the box back afterwards.
-        float seconds = Math.Max(1f, src.utils.Config.LoadedConfig.Modules.Retakes.SiteBannerSeconds);
-        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: true);
+        var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
+        float seconds = Math.Max(1f, retakes.SiteBannerSeconds);
+        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: retakes.SiteBannerHidesSkill);
     }
 
     // The banner is a picture when the config has an image URL for the site (same trick as CS2-CenterAdvert:
