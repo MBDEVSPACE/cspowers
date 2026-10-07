@@ -57,6 +57,16 @@ namespace src
 
             Instance.RegisterListener<OnServerPrecacheResources>(LoadManifest);
 
+            // One line to tell at a glance which build is running and how the site call will be drawn.
+            try
+            {
+                var retakes = Config.LoadedConfig.Modules.Retakes;
+                string built = File.GetLastWriteTimeUtc(typeof(jRandomSkills).Assembly.Location).ToString("yyyy-MM-dd HH:mm 'UTC'");
+                Logger.LogInformation("[TiredPowers] Build {Built} | SiteBannerStyle={Style} (screen text available: {Screen}) | SiteCallCtOnly={CtOnly} | ScreenBannerMethod={Method}",
+                    built, retakes.SiteBannerStyle, EntitySafety.SpawningBlocked ? "NO, entity spawning is blocked (EntitySpawnSafety) so the HUD banner is used" : "yes", retakes.SiteCallCtOnly, retakes.ScreenBannerMethod);
+            }
+            catch { }
+
             // Game-thread timer, not a thread-pool task: nothing in the plugin may touch the game from another thread.
             AddTimer(3.5f, PrintInfoToConsole);
 
