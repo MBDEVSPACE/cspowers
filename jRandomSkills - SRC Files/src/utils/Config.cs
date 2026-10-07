@@ -539,6 +539,16 @@ namespace src.utils
             public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
             public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
             public float SiteBannerSeconds { get; set; } = 4f;
+            // "Screen": big "SITE A" / "SITE B" text drawn at the top of the screen on its own (not in the centre HUD
+            // slot, so it never touches the skill text and costs no HUD traffic). "Html": the centre HUD banner
+            // (needed for the SiteImage pictures). Screen falls back to Html when entity spawning is blocked.
+            public string SiteBannerStyle { get; set; } = "Screen";
+            public float ScreenBannerFontSize { get; set; } = 80f;
+            // Height on screen: 0 = centre, about 2.5 = top edge.
+            public float ScreenBannerHeight { get; set; } = 2.0f;
+            public string ScreenBannerFont { get; set; } = "";
+            public string ScreenBannerColorA { get; set; } = "#FF5050";
+            public string ScreenBannerColorB { get; set; } = "#50A0FF";
             // true: the banner is alone on screen, lifted to the top, and the skill text comes back when it ends.
             // false: the banner sits above the skill text in the same box, so the skill never disappears.
             public bool SiteBannerHidesSkill { get; set; } = true;

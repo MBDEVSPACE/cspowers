@@ -578,6 +578,7 @@ namespace src.player
         {
             ReportStall();
             NoRecoil.RestoreSpread();
+            ScreenText.OnTick();
 
             long perfStart = PerfLog.Start();
             long perfStart0 = System.Diagnostics.Stopwatch.GetTimestamp();

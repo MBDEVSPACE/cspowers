@@ -375,6 +375,12 @@
       "SiteImageA": "https://cdn.michael.cool/d/A.png",
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
+      "SiteBannerStyle": "Screen",
+      "ScreenBannerFontSize": 80.0,
+      "ScreenBannerHeight": 2.0,
+      "ScreenBannerFont": "",
+      "ScreenBannerColorA": "#FF5050",
+      "ScreenBannerColorB": "#50A0FF",
       "SiteBannerHidesSkill": true,
       "IncompatibleSkills": [
         "AreaReaper",
