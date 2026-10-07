@@ -536,8 +536,8 @@ namespace src.utils
             public bool HideBombPlantedAlert { get; set; } = true;
             // Round-start site call as a picture (https URL to a PNG/JPG) instead of the "SITE A" text; one per site.
             // Leave empty to keep the text banner.
-            public string SiteImageA { get; set; } = "";
-            public string SiteImageB { get; set; } = "";
+            public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
+            public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
             public float SiteBannerSeconds { get; set; } = 4f;
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> IncompatibleSkills { get; set; } =
