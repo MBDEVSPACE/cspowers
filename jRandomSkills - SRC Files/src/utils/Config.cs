@@ -539,6 +539,28 @@ namespace src.utils
             public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
             public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
             public float SiteBannerSeconds { get; set; } = 4f;
+            // "Screen": big "SITE A" / "SITE B" text drawn at the top of the screen on its own (not in the centre HUD
+            // slot, so it never touches the skill text and costs no HUD traffic). "Html": the centre HUD banner
+            // (needed for the SiteImage pictures). Screen falls back to Html when entity spawning is blocked.
+            public string SiteBannerStyle { get; set; } = "Screen";
+            // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
+            public bool SiteCallCtOnly { get; set; } = true;
+            // Screen text placement, CS2-GameHUD / InfoTop convention: X right, Y up, Z distance from the eyes.
+            // InfoTop's defaults are X 0, Y 40, Z 80 with font 20 and 0.25 units per pixel.
+            public string ScreenBannerMethod { get; set; } = "Pawn"; // Pawn | Orient | ViewModel
+            public float ScreenBannerX { get; set; } = 0f;
+            public float ScreenBannerY { get; set; } = 40f;
+            public float ScreenBannerZ { get; set; } = 80f;
+            public float ScreenBannerFontSize { get; set; } = 40f;
+            public float ScreenBannerUnitsPerPx { get; set; } = 0.25f;
+            public string ScreenBannerFont { get; set; } = "Arial Bold";
+            // Dark box behind the text, as InfoTop draws it (border size in units; 0 = no box).
+            public float ScreenBannerBackgroundBorder { get; set; } = 0.5f;
+            public string ScreenBannerColorA { get; set; } = "#FF5050";
+            public string ScreenBannerColorB { get; set; } = "#50A0FF";
+            // true: the banner is alone on screen, lifted to the top, and the skill text comes back when it ends.
+            // false: the banner sits above the skill text in the same box, so the skill never disappears.
+            public bool SiteBannerHidesSkill { get; set; } = true;
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> IncompatibleSkills { get; set; } =
             [
@@ -615,6 +637,9 @@ namespace src.utils
             public string NoticeLineColor { get; set; } = "#FFD700";
             // Empty lines under a round-start announcement (site call): more lines push the banner higher on screen.
             public int NoticeLiftLines { get; set; } = 4;
+            // Ticks between two sends of an unchanged HUD (1 = every tick like the original plugin, 6 = the most
+            // before the centre text starts to blink). Fewer sends = less network traffic per player.
+            public int HudResendTicks { get; set; } = 4;
         }
 
         public class LanguageSystem

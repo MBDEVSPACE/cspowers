@@ -153,7 +153,8 @@
     "WSADMenuControllsLineColor3": "green",
     "VerticalOffsetLines": 1,
     "NoticeLineColor": "#FFD700",
-    "NoticeLiftLines": 4
+    "NoticeLiftLines": 4,
+    "HudResendTicks": 4
   },
   "ChatMessage": {
     "MaxWidth": 1280.0,
@@ -374,6 +375,19 @@
       "SiteImageA": "https://cdn.michael.cool/d/A.png",
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
+      "SiteBannerStyle": "Screen",
+      "SiteCallCtOnly": true,
+      "ScreenBannerMethod": "Pawn",
+      "ScreenBannerX": 0.0,
+      "ScreenBannerY": 40.0,
+      "ScreenBannerZ": 80.0,
+      "ScreenBannerFontSize": 40.0,
+      "ScreenBannerUnitsPerPx": 0.25,
+      "ScreenBannerFont": "Arial Bold",
+      "ScreenBannerBackgroundBorder": 0.5,
+      "ScreenBannerColorA": "#FF5050",
+      "ScreenBannerColorB": "#50A0FF",
+      "SiteBannerHidesSkill": true,
       "IncompatibleSkills": [
         "AreaReaper",
         "Bankrupt",

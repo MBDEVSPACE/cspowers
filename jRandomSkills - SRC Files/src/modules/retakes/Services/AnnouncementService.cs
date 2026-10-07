@@ -59,12 +59,35 @@ public class AnnouncementService
         Logger.LogInfo("Announcement", $"Announced plant location: {locationName}");
     }
 
-    private static void ShowSiteBanner(CCSPlayerController player, string bannerHtml, string plainText)
+    private static void ShowSiteBanner(CCSPlayerController player, Bombsite bombsite, string bannerHtml, string plainText)
     {
-        // Round-start alert: the centre box shows only this banner, lifted towards the top of the screen, for a
+        var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
+        float seconds = Math.Max(1f, retakes.SiteBannerSeconds);
+
+        // Preferred: text drawn at the top of the player's screen, outside the centre HUD slot.
+        if (retakes.SiteBannerStyle.Trim().Equals("Screen", StringComparison.OrdinalIgnoreCase))
+        {
+            var color = ParseColor(bombsite == Bombsite.A ? retakes.ScreenBannerColorA : retakes.ScreenBannerColorB, bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 80, 80) : System.Drawing.Color.FromArgb(80, 160, 255));
+            var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont, retakes.ScreenBannerBackgroundBorder, retakes.ScreenBannerBackgroundBorder);
+            if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, style, seconds, src.utils.ScreenText.ParseMethod(retakes.ScreenBannerMethod)))
+                return;
+        }
+
+        // Round-start alert in the centre box: only this banner, lifted towards the top of the screen, for a
         // few seconds; the skill HUD takes the box back afterwards.
-        float seconds = Math.Max(1f, src.utils.Config.LoadedConfig.Modules.Retakes.SiteBannerSeconds);
-        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: true);
+        src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: retakes.SiteBannerHidesSkill);
+    }
+
+    private static System.Drawing.Color ParseColor(string hex, System.Drawing.Color fallback)
+    {
+        try
+        {
+            hex = hex.Trim().TrimStart('#');
+            if (hex.Length == 6)
+                return System.Drawing.Color.FromArgb(Convert.ToInt32(hex[..2], 16), Convert.ToInt32(hex[2..4], 16), Convert.ToInt32(hex[4..6], 16));
+        }
+        catch { }
+        return fallback;
     }
 
     // The banner is a picture when the config has an image URL for the site (same trick as CS2-CenterAdvert:
@@ -100,15 +123,23 @@ public class AnnouncementService
         var centerText = StripColors(centerAnnouncementMessage);
         var centerHtml = BannerHtml(bombsite);
 
+        bool ctOnly = src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallCtOnly;
+
         foreach (var player in Utilities.GetPlayers())
         {
+            // The Ts spawn on the site; the call is for the CTs (and spectators) unless configured otherwise.
+            if (ctOnly && player.Team == CounterStrikeSharp.API.Modules.Utils.CsTeam.Terrorist)
+            {
+                continue;
+            }
+
             if (!onlyCenter)
             {
                 player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
 
                 if (_centerEnabled)
                 {
-                    ShowSiteBanner(player, centerHtml, centerText);
+                    ShowSiteBanner(player, bombsite, centerHtml, centerText);
                 }
 
                 if (_voicesEnabled && !_hasMutedVoices.Contains(player))
@@ -125,7 +156,7 @@ public class AnnouncementService
                 continue;
             }
 
-            ShowSiteBanner(player, centerHtml, centerText);
+            ShowSiteBanner(player, bombsite, centerHtml, centerText);
         }
 
         Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT)");
