@@ -34,6 +34,7 @@ namespace src.modules
         private static int votedRoundsLeft;
         private static Vote? vote;
         private static DateTime cooldownUntil = DateTime.MinValue;
+        private static readonly Dictionary<ulong, DateTime> playerCooldownUntil = [];
         private static bool loaded;
 
         // Mode of the round in progress.
@@ -62,6 +63,7 @@ namespace src.modules
             votedRoundsLeft = 0;
             RoundMode = WeaponMode.Normal;
             cooldownUntil = DateTime.MinValue;
+            playerCooldownUntil.Clear();
         }
 
         // Skills that give guns or bend the weapon rules stay out of the draw during pistol / voted rounds.
@@ -239,6 +241,13 @@ namespace src.modules
                 return;
             }
 
+            // One player cannot keep starting votes: a personal wait on top of the server-wide one.
+            if (playerCooldownUntil.TryGetValue(player.SteamID, out var ownUntil) && ownUntil > DateTime.Now)
+            {
+                player.PrintToChat($" {Tag}{ChatColors.Red}{player.GetTranslationWithoutIlliterate("wr_player_cooldown", (int)(ownUntil - DateTime.Now).TotalSeconds)}");
+                return;
+            }
+
             if (Humans().Count < Settings.MinimumPlayersToStartVoting)
             {
                 player.PrintToChat($" {Tag}{ChatColors.Red}{player.GetTranslationWithoutIlliterate("wr_not_enough")}");
@@ -281,6 +290,7 @@ namespace src.modules
 
             vote = new Vote { Mode = mode };
             vote.Yes.Add(starter.SteamID);
+            playerCooldownUntil[starter.SteamID] = DateTime.Now.AddSeconds(Math.Max(0f, Settings.PlayerCooldownSeconds));
 
             foreach (var player in Humans())
             {

@@ -5,7 +5,7 @@ namespace RetakesPlugin.Configs;
 public class MapConfigSettings
 {
     [JsonPropertyName("EnableBombsiteAnnouncementVoices")]
-    public bool EnableBombsiteAnnouncementVoices { get; set; } = false;
+    public bool EnableBombsiteAnnouncementVoices { get; set; } = true;
 
     [JsonPropertyName("EnableBombsiteAnnouncementCenter")]
     public bool EnableBombsiteAnnouncementCenter { get; set; } = true;

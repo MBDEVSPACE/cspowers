@@ -787,6 +787,7 @@
   "wr_vote_passed_normal": "Vote passed: back to normal rounds from the next round.",
   "wr_vote_failed": "Vote failed: {0} ({1}/{2} yes).",
   "wr_cooldown": "Wait {0}s before the next weapon vote.",
+  "wr_player_cooldown": "You already started a vote; wait {0}s before starting another.",
   "wr_not_enough": "Not enough players for a weapon vote.",
   "wr_round_mode": "This round: {0}",
   "wr_mode_over": "{0} are over; back to normal rounds.",

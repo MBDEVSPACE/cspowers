@@ -454,6 +454,8 @@ namespace src.utils
             public int MinimumPlayersToStartVoting { get; set; } = 2;
             // Wait between two weapon votes.
             public float CooldownSeconds { get; set; } = 60f;
+            // Wait before the same player may start another weapon vote.
+            public float PlayerCooldownSeconds { get; set; } = 180f;
             // How many rounds a voted mode lasts; 0 keeps it until the next vote (vote "Normal rounds" to end it).
             public int ModeDurationRounds { get; set; } = 0;
             // Skills that hand out guns or change the weapon rules; left out of the draw during pistol / voted rounds.

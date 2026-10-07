@@ -472,6 +472,7 @@
       "PercentagesToSuccess": 60.0,
       "MinimumPlayersToStartVoting": 2,
       "CooldownSeconds": 60.0,
+      "PlayerCooldownSeconds": 180.0,
       "ModeDurationRounds": 0,
       "DisabledSkills": [
         "RandomWeapon", "SniperElite", "GuidedBullet", "WeaponsSwap", "Glaz", "Zeus", "LongZeus", "PrimaryBan",
