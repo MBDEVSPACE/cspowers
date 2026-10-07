@@ -68,7 +68,7 @@ public class AnnouncementService
         if (retakes.SiteBannerStyle.Trim().Equals("Screen", StringComparison.OrdinalIgnoreCase))
         {
             var color = ParseColor(bombsite == Bombsite.A ? retakes.ScreenBannerColorA : retakes.ScreenBannerColorB, bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 80, 80) : System.Drawing.Color.FromArgb(80, 160, 255));
-            var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont);
+            var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont, retakes.ScreenBannerBackgroundBorder, retakes.ScreenBannerBackgroundBorder);
             if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, style, seconds, src.utils.ScreenText.ParseMethod(retakes.ScreenBannerMethod)))
                 return;
         }

@@ -384,6 +384,7 @@
       "ScreenBannerFontSize": 40.0,
       "ScreenBannerUnitsPerPx": 0.25,
       "ScreenBannerFont": "Arial Bold",
+      "ScreenBannerBackgroundBorder": 0.5,
       "ScreenBannerColorA": "#FF5050",
       "ScreenBannerColorB": "#50A0FF",
       "SiteBannerHidesSkill": true,

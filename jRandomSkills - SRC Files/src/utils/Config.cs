@@ -554,6 +554,8 @@ namespace src.utils
             public float ScreenBannerFontSize { get; set; } = 40f;
             public float ScreenBannerUnitsPerPx { get; set; } = 0.25f;
             public string ScreenBannerFont { get; set; } = "Arial Bold";
+            // Dark box behind the text, as InfoTop draws it (border size in units; 0 = no box).
+            public float ScreenBannerBackgroundBorder { get; set; } = 0.5f;
             public string ScreenBannerColorA { get; set; } = "#FF5050";
             public string ScreenBannerColorB { get; set; } = "#50A0FF";
             // true: the banner is alone on screen, lifted to the top, and the skill text comes back when it ends.
