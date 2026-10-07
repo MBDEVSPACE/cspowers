@@ -3228,9 +3228,9 @@
     "Rarity": "Rare"
   },
   {
-    "Speed": 400.0,
-    "TurnRate": 0.4,
-    "HitRadius": 40.0,
+    "Speed": 250.0,
+    "TurnRate": 120.0,
+    "HitRadius": 45.0,
     "MaxFlightTime": 6.0,
     "Damage": 150,
     "Cooldown": 4.0,

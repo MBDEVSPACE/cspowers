@@ -172,7 +172,10 @@ namespace src.player.skills
             if (SkillPlayerInfo.IsEmpty) return;
 
             float speed = SkillsInfo.GetValue<float>(skillName, "speed") / 64f;
-            float turn = Math.Clamp(SkillsInfo.GetValue<float>(skillName, "turnRate"), 0.01f, 1f);
+            // TurnRate: degrees per second the bullet may turn towards the crosshair (a steady, predictable arc).
+            // Values of 1 or less are the old per-tick blend fraction and are mapped onto the same scale.
+            float turnRate = SkillsInfo.GetValue<float>(skillName, "turnRate");
+            float maxStepRad = (turnRate <= 1f ? Math.Clamp(turnRate, 0.01f, 1f) * 300f : Math.Clamp(turnRate, 10f, 720f)) / 64f * (MathF.PI / 180f);
             float hitRadius = SkillsInfo.GetValue<float>(skillName, "hitRadius");
             int maxTicks = (int)(SkillsInfo.GetValue<float>(skillName, "maxFlightTime") * 64);
 
@@ -218,12 +221,7 @@ namespace src.player.skills
                 // Steer towards where the player looks; the mouse keeps turning the pawn while the view is on the camera.
                 QAngle view = new(pawn.V_angle.X, pawn.V_angle.Y, 0);
                 Vector look = SkillUtils.GetForwardVector(view);
-                Vector dir = new(
-                    info.Direction.X + (look.X - info.Direction.X) * turn,
-                    info.Direction.Y + (look.Y - info.Direction.Y) * turn,
-                    info.Direction.Z + (look.Z - info.Direction.Z) * turn);
-                float len = dir.Length();
-                if (len > 0.0001f) dir = new Vector(dir.X / len, dir.Y / len, dir.Z / len);
+                Vector dir = RotateTowards(info.Direction, look, maxStepRad);
                 info.Direction = dir;
 
                 Vector next = info.Position + dir * speed;
@@ -259,6 +257,30 @@ namespace src.player.skills
                     }
                 }
             }
+        }
+
+        // Turns `from` towards `to` by at most `maxStep` radians (both unit vectors); the result is a unit vector.
+        private static Vector RotateTowards(Vector from, Vector to, float maxStep)
+        {
+            float dot = Math.Clamp(from.X * to.X + from.Y * to.Y + from.Z * to.Z, -1f, 1f);
+            float angle = MathF.Acos(dot);
+            if (angle <= maxStep || angle < 0.0001f) return to;
+
+            // Component of `to` perpendicular to `from` gives the turning plane.
+            Vector perp = new(to.X - from.X * dot, to.Y - from.Y * dot, to.Z - from.Z * dot);
+            float perpLen = perp.Length();
+            if (perpLen < 0.0001f)
+            {
+                // Exactly opposite: pick any perpendicular axis to start the turn.
+                perp = MathF.Abs(from.Z) < 0.9f ? new Vector(-from.Y, from.X, 0) : new Vector(0, -from.Z, from.Y);
+                perpLen = perp.Length();
+            }
+            perp = new Vector(perp.X / perpLen, perp.Y / perpLen, perp.Z / perpLen);
+
+            float c = MathF.Cos(maxStep), s = MathF.Sin(maxStep);
+            Vector result = new(from.X * c + perp.X * s, from.Y * c + perp.Y * s, from.Z * c + perp.Z * s);
+            float len = result.Length();
+            return len > 0.0001f ? new Vector(result.X / len, result.Y / len, result.Z / len) : to;
         }
 
         // The first living player (shooter and teammates excluded) within hitRadius of the segment travelled this tick.
@@ -350,7 +372,7 @@ namespace src.player.skills
             public int SuppressUntilTick { get; set; } = -1;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff4fd8", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Legendary, float speed = 400f, float turnRate = .4f, float hitRadius = 40f, float maxFlightTime = 6f, int damage = 150, float cooldown = 4f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff4fd8", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Legendary, float speed = 250f, float turnRate = 120f, float hitRadius = 45f, float maxFlightTime = 6f, int damage = 150, float cooldown = 4f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             // Bullet speed in units per second, how fast it bends towards the crosshair (0-1 per tick),
             // how close it has to pass to a player to count as a hit, and how long it can fly.

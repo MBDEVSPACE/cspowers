@@ -144,8 +144,16 @@ public class AnnouncementService
 
                 if (_voicesEnabled && !_hasMutedVoices.Contains(player))
                 {
+                    // A "play" sent in the same frame as the round restart is dropped by the client now and then;
+                    // a moment later it always goes through.
                     var bombsiteAnnouncer = BombsiteAnnouncers[_random.Next(BombsiteAnnouncers.Length)];
-                    player.ExecuteClientCommand($"play sounds/vo/agents/{bombsiteAnnouncer}/loc_{bombsite.ToString().ToLower()}_01");
+                    string command = $"play sounds/vo/agents/{bombsiteAnnouncer}/loc_{bombsite.ToString().ToLower()}_01";
+                    var target = player;
+                    _plugin.AddTimer(0.3f, () =>
+                    {
+                        if (PlayerHelper.IsValid(target) && PlayerHelper.IsConnected(target))
+                            target.ExecuteClientCommand(command);
+                    });
                 }
 
                 continue;

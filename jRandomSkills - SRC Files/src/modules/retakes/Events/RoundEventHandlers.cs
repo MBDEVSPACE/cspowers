@@ -318,10 +318,15 @@ public class RoundEventHandlers
 
         _announcementService.AnnouncePlantLocation(_spawnManager.CurrentPlanterSpawn?.PlantLocation, _currentBombsite);
 
-        _plugin.AddTimer(4.1f, () =>
+        // The stock plugin repeats the site banner a few seconds after the plant; with the bomb planted at round
+        // start that second banner only looked like a late first one, so it is off unless asked for.
+        if (src.utils.Config.LoadedConfig.Modules.Retakes.RepeatSiteCallAfterPlant)
         {
-            _announcementService.AnnounceBombsite(_currentBombsite, true);
-        });
+            _plugin.AddTimer(4.1f, () =>
+            {
+                _announcementService.AnnounceBombsite(_currentBombsite, true);
+            });
+        }
 
         return HookResult.Continue;
     }
