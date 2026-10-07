@@ -545,6 +545,8 @@ namespace src.utils
             public string SiteBannerStyle { get; set; } = "Screen";
             // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
             public bool SiteCallCtOnly { get; set; } = true;
+            // Show the site banner a second time a few seconds after the bomb is planted (stock retakes behaviour).
+            public bool RepeatSiteCallAfterPlant { get; set; } = false;
             // Screen text placement, CS2-GameHUD / InfoTop convention: X right, Y up, Z distance from the eyes.
             // InfoTop's defaults are X 0, Y 40, Z 80 with font 20 and 0.25 units per pixel.
             public string ScreenBannerMethod { get; set; } = "Pawn"; // Pawn | Orient | ViewModel

@@ -377,6 +377,7 @@
       "SiteBannerSeconds": 4.0,
       "SiteBannerStyle": "Screen",
       "SiteCallCtOnly": true,
+      "RepeatSiteCallAfterPlant": false,
       "ScreenBannerMethod": "Pawn",
       "ScreenBannerX": 0.0,
       "ScreenBannerY": 40.0,

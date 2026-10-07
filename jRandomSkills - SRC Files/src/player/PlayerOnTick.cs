@@ -89,7 +89,9 @@ namespace src.player
 
             if (skillPlayer.HudSuppressedUntil > now) return;
 
-            if (player.PawnIsAlive && skillPlayer.SkillHudExpired < now && string.IsNullOrEmpty(skillPlayer.PrintHTML)) return;
+            // A pending centre notice (site call, plant prompt) is drawn right away, even before the skill is drawn.
+            bool noticePending = skillPlayer.CenterNoticeUntil > now && !string.IsNullOrEmpty(skillPlayer.CenterNotice);
+            if (player.PawnIsAlive && skillPlayer.SkillHudExpired < now && string.IsNullOrEmpty(skillPlayer.PrintHTML) && !noticePending) return;
 
             if (SkillUtils.HasMenu(player))
             {
