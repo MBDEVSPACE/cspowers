@@ -21,6 +21,7 @@ public class RoundEventHandlers
     private readonly AnnouncementService _announcementService;
     private readonly bool _isAutoPlantEnabled;
     private readonly bool _isInstantPlantEnabled;
+    private readonly bool _isForceArmEnabled;
     private readonly bool _enableFallbackAllocation;
     private readonly bool _enableFallbackBombsiteAnnouncement;
     private readonly Random _random;
@@ -31,7 +32,7 @@ public class RoundEventHandlers
     private CsTeam _lastRoundWinner = CsTeam.None;
     private Bombsite? _forcedBombsite;
 
-    public RoundEventHandlers(RetakesPlugin plugin, GameManager gameManager, SpawnManager spawnManager, BreakerManager? breakerManager, AllocationService allocationService, AnnouncementService announcementService, bool isAutoPlantEnabled, bool isInstantPlantEnabled, bool enableFallbackAllocation, bool enableFallbackBombsiteAnnouncement, Random random)
+    public RoundEventHandlers(RetakesPlugin plugin, GameManager gameManager, SpawnManager spawnManager, BreakerManager? breakerManager, AllocationService allocationService, AnnouncementService announcementService, bool isAutoPlantEnabled, bool isInstantPlantEnabled, bool isForceArmEnabled, bool enableFallbackAllocation, bool enableFallbackBombsiteAnnouncement, Random random)
     {
         _plugin = plugin;
         _gameManager = gameManager;
@@ -41,6 +42,7 @@ public class RoundEventHandlers
         _announcementService = announcementService;
         _isAutoPlantEnabled = isAutoPlantEnabled;
         _isInstantPlantEnabled = isInstantPlantEnabled;
+        _isForceArmEnabled = isForceArmEnabled;
         _enableFallbackAllocation = enableFallbackAllocation;
         _enableFallbackBombsiteAnnouncement = enableFallbackBombsiteAnnouncement;
         _random = random;
@@ -259,13 +261,71 @@ public class RoundEventHandlers
 
         if (!_isAutoPlantEnabled && _planter != null && PlayerHelper.IsValid(_planter))
         {
-            // Auto-plant is unavailable on this server build: the planter has the bomb and plants it by hand.
-            var plantText = AnnouncementService.StripColors(_plugin.Localizer["retakes.plant_now"]);
-            src.utils.SkillUtils.ShowCenterNotice(_planter, src.utils.SkillUtils.NoticeHtml(plantText), plantText, 8f);
-            _planter.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {_plugin.Localizer["retakes.plant_now"]}");
+            if (_isForceArmEnabled)
+            {
+                // Hands-free plant through the game's own code: the planter holds the C4, the plugin starts
+                // its arming and lets it finish at once. Nothing is spawned by the plugin.
+                var planter = _planter;
+                Server.NextFrame(() => ForceArm(planter, 0));
+            }
+            else
+            {
+                PromptManualPlant(_planter);
+            }
         }
 
         return HookResult.Continue;
+    }
+
+    private void PromptManualPlant(CCSPlayerController planter)
+    {
+        if (!PlayerHelper.IsValid(planter)) return;
+        var plantText = AnnouncementService.StripColors(_plugin.Localizer["retakes.plant_now"]);
+        src.utils.SkillUtils.ShowCenterNotice(planter, src.utils.SkillUtils.NoticeHtml(plantText), plantText, 8f);
+        planter.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {_plugin.Localizer["retakes.plant_now"]}");
+    }
+
+    private const int ForceArmAttempts = 20; // 2 s at 0.1 s
+
+    // Arms the planter's C4 as if they had started planting with E, with the arming time already over, so the
+    // weapon's next think completes the plant. Retried for a short while (the C4 may not be the active weapon
+    // on the first frame); if the game refuses (planter outside the bomb zone, dead, no C4) the planter is told
+    // to plant by hand.
+    private void ForceArm(CCSPlayerController planter, int attempt)
+    {
+        if (!PlayerHelper.IsValid(planter) || !PlayerHelper.IsConnected(planter) || !planter.PawnIsAlive) return;
+        if (src.utils.PlayerManager.GetPlantedBomb() != null) return;
+
+        var gameRules = GameRulesHelper.GetGameRulesOrNull();
+        if (gameRules == null || gameRules.WarmupPeriod || gameRules.BombPlanted) return;
+
+        var pawn = planter.PlayerPawn.Value;
+        var weapon = pawn?.WeaponServices?.ActiveWeapon.Value;
+
+        if (pawn != null && pawn.IsValid && weapon != null && weapon.IsValid && weapon.DesignerName == "weapon_c4")
+        {
+            var c4 = weapon.As<CC4>();
+            if (!c4.StartedArming)
+            {
+                c4.IsPlantingViaUse = true;
+                c4.StartedArming = true;
+            }
+            c4.ArmedTime = Server.CurrentTime;
+        }
+        else if (pawn != null && pawn.IsValid && planter.UserId != null)
+        {
+            // Bring the C4 up; it is the only weapon the planter can have been given with it.
+            NativeAPI.IssueClientCommand((int)planter.UserId, "slot5");
+        }
+
+        if (attempt + 1 >= ForceArmAttempts)
+        {
+            Logger.LogWarning("Bomb", $"Arming {planter.PlayerName}'s C4 did not plant it (outside the bomb zone or no C4 in hand); they plant by hand this round.");
+            PromptManualPlant(planter);
+            return;
+        }
+
+        _plugin.AddTimer(0.1f, () => ForceArm(planter, attempt + 1));
     }
 
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
