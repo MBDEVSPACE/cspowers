@@ -65,8 +65,7 @@ namespace src.player.skills
                 Schema.SetSchemaValue(movement.Handle, "CCSPlayer_MovementServices", "m_flStamina", 0f);
 
             // Hold jump: as long as the key is down every landing turns straight into the next hop.
-            bool jumpHeld = (player.Buttons & PlayerButtons.Jump) != 0
-                || (movement?.Buttons?.ButtonStates[0] & (ulong)PlayerButtons.Jump) != 0;
+            bool jumpHeld = (player.Buttons & PlayerButtons.Jump) != 0;
             bool onGround = flags.HasFlag(PlayerFlags.FL_ONGROUND);
 
             float vX = eventPlayerPawn.AbsVelocity.X;
@@ -98,8 +97,10 @@ namespace src.player.skills
                 if (airSpeed > groundSpeed) { vX = air.X; vY = air.Y; }
             }
 
+            // The hop keeps the player's speed (plus the optional boost) but never above maxSpeed: without the
+            // cap a push from another skill or a long fall was carried from hop to hop and felt like flying.
             float speed2D = MathF.Sqrt(vX * vX + vY * vY);
-            float target = speed2D < 10f ? speed2D : Math.Min(speed2D * boost, Math.Max(maxSpeed, speed2D));
+            float target = speed2D < 10f ? speed2D : Math.Min(speed2D * boost, maxSpeed);
             float scale = speed2D > 0f ? target / speed2D : 1f;
 
             // Written straight into the velocity (no Teleport): a teleport each hop is what made it feel laggy.
@@ -108,7 +109,7 @@ namespace src.player.skills
             eventPlayerPawn.AbsVelocity.Z = jumpVelocity;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 500f, float jumpVelocity = 300f, float jumpBoost = 1.08f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 350f, float jumpVelocity = 300f, float jumpBoost = 1f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             public float MaxSpeed { get; set; } = maxSpeed;
             public float JumpVelocity { get; set; } = jumpVelocity;
