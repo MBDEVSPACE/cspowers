@@ -31,6 +31,38 @@ namespace src.player.skills
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
         }
 
+        // The movement cvars an autobhop server would set. They are replicated to the holder's CLIENT only, so
+        // its prediction matches what the server does for them below (auto-jump on landing, no landing speed
+        // clamp, no stamina cost); without this the hop was only applied server-side and the client stuttered.
+        private static readonly (string Name, string Value)[] ClientCvars =
+        [
+            ("sv_autobunnyhopping", "1"),
+            ("sv_enablebunnyhopping", "1"),
+            ("sv_staminajumpcost", "0"),
+            ("sv_staminalandcost", "0"),
+        ];
+
+        public static void EnableSkill(CCSPlayerController player)
+        {
+            if (player == null || !player.IsValid || player.IsBot) return;
+
+            foreach (var (name, value) in ClientCvars)
+                try { player.ReplicateConVar(name, value); } catch { }
+        }
+
+        public static void DisableSkill(CCSPlayerController player)
+        {
+            if (player == null || !player.IsValid || player.IsBot) return;
+
+            // Back to the server's own values.
+            foreach (var (name, _) in ClientCvars)
+            {
+                string serverValue = SkillUtils.CvarString(name, "");
+                if (!string.IsNullOrEmpty(serverValue))
+                    try { player.ReplicateConVar(name, serverValue); } catch { }
+            }
+        }
+
         public static void OnTick()
         {
             PlayerManager.FillSkillHolders(skillName, holderBuffer);
@@ -82,7 +114,7 @@ namespace src.player.skills
             if (!jumpHeld) return;
 
             // Only once per landing: a new hop needs a tick in the air in between.
-            if (playersLastJump.TryGetValue(eventPlayer!.Index, out int lastTick) && lastTick + 2 >= Server.TickCount) return;
+            if (playersLastJump.TryGetValue(eventPlayer!.Index, out int lastTick) && lastTick + 1 >= Server.TickCount) return;
             playersLastJump[eventPlayer.Index] = Server.TickCount;
 
             float jumpVelocity = SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
@@ -109,7 +141,7 @@ namespace src.player.skills
             eventPlayerPawn.AbsVelocity.Z = jumpVelocity;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 350f, float jumpVelocity = 300f, float jumpBoost = 1f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
+        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, string requiredPermission = "", float? hudDuration = null, float? descriptionHudDuration = null, int maxPerServer = -1, Rarity rarity = Rarity.Common, float maxSpeed = 500f, float jumpVelocity = 301.99f, float jumpBoost = 1f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates, requiredPermission, hudDuration, descriptionHudDuration, maxPerServer, rarity)
         {
             public float MaxSpeed { get; set; } = maxSpeed;
             public float JumpVelocity { get; set; } = jumpVelocity;

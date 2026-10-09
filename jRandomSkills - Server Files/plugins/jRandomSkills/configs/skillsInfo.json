@@ -2494,8 +2494,8 @@
     "Rarity": "Uncommon"
   },
   {
-    "MaxSpeed": 350.0,
-    "JumpVelocity": 300.0,
+    "MaxSpeed": 500.0,
+    "JumpVelocity": 301.99,
     "JumpBoost": 1.0,
     "Weight": 1.0,
     "NeedsTeammates": false,
@@ -3246,6 +3246,29 @@
     "DescriptionHudDuration": null,
     "RequiredPermission": "",
     "MaxPerServer": -1,
+    "MinPlayer": 0,
+    "Rarity": "Legendary"
+  },
+  {
+    "SecondsInBack": 7.0,
+    "Cooldown": 30.0,
+    "UsesPerRound": 1,
+    "SampleTicks": 8,
+    "ReviveDead": true,
+    "RestoreHealth": true,
+    "SoundVolume": 1.0,
+    "Weight": 1.0,
+    "NeedsTeammates": false,
+    "DisableOnFreezeTime": true,
+    "DisableOnPistolRound": false,
+    "OnlyTeam": 0,
+    "Color": "#36c9ff",
+    "Active": true,
+    "Name": "TimeLord",
+    "HudDuration": null,
+    "DescriptionHudDuration": null,
+    "RequiredPermission": "",
+    "MaxPerServer": 1,
     "MinPlayer": 0,
     "Rarity": "Legendary"
   }
