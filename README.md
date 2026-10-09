@@ -234,7 +234,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Rubber Bullets    | Your bullets significantly slow down players                                                       | -                |
 | Sapper            | You can plant and defuse bombs faster                                                              | -                |
 | Scavenger         | Each kill refills your guns' ammo and may give you a grenade                                       | -                |
-| Second Chance     | After death, you respawn with the same amount of health                                            | -                |
+| Second Chance     | After death, you get back up where you fell with the same amount of health                         | -                |
 | Shade             | You teleport behind the back of a hit enemy                                                        | -                |
 | Short Fuse        | The bomb explodes much faster                                                                      | -                |
 | Silent            | Your footsteps and jumps are silent to other players                                               | -                |
