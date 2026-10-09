@@ -541,7 +541,9 @@ namespace src.utils
             public float SiteBannerSeconds { get; set; } = 4f;
             // "Screen": big "SITE A" / "SITE B" text drawn at the top of the screen on its own (not in the centre HUD
             // slot, so it never touches the skill text and costs no HUD traffic). "Html": the centre HUD banner
-            // (needed for the SiteImage pictures). Screen falls back to Html when entity spawning is blocked.
+            // (needed for the SiteImage pictures). "Off": no banner (chat line and voice only). Screen falls back to
+            // Html when entity spawning is blocked. With the standalone RetakesSiteAnnounce plugin loaded the banner
+            // is off automatically, whatever this says.
             public string SiteBannerStyle { get; set; } = "Screen";
             // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
             public bool SiteCallCtOnly { get; set; } = true;

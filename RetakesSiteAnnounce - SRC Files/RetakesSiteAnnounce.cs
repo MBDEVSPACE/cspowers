@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using RetakesPluginShared;
@@ -27,6 +28,10 @@ public class RetakesSiteAnnounce : BasePlugin, IPluginConfig<SiteAnnounceConfig>
 
     private static readonly PluginCapability<IRetakesPluginEventSender> RetakesEvents = new("retakes_plugin:event_sender");
 
+    // Lets other plugins see that this one draws the site call: the retakes module bundled in jRandomSkills skips its
+    // own banner while this convar exists, so the call is never on screen twice.
+    public FakeConVar<string> SiteAnnounceActive = new("retakes_site_announce_version", "RetakesSiteAnnounce is loaded; its version.", "1.0.0");
+
     private readonly ScreenText _screen = new();
     private IRetakesPluginEventSender? _sender;
 
@@ -49,6 +54,8 @@ public class RetakesSiteAnnounce : BasePlugin, IPluginConfig<SiteAnnounceConfig>
 
     public override void Load(bool hotReload)
     {
+        RegisterFakeConVars(typeof(RetakesSiteAnnounce), this);
+
         RegisterListener<Listeners.OnMapStart>(OnMapStart);
         RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
         RegisterListener<Listeners.CheckTransmit>(OnCheckTransmit);

@@ -114,6 +114,20 @@ public class AnnouncementService
         return $"<font class='fontWeight-Bold fontSize-l' color='{siteColor}'>▶  SITE {bombsite}  ◀</font>";
     }
 
+    private static bool _standaloneNoted;
+
+    // RetakesSiteAnnounce registers this convar while it is loaded.
+    private static bool StandaloneSiteAnnounceLoaded()
+    {
+        bool loaded = CounterStrikeSharp.API.Modules.Cvars.ConVar.Find("retakes_site_announce_version") != null;
+        if (loaded && !_standaloneNoted)
+        {
+            _standaloneNoted = true;
+            Logger.LogInfo("Announcement", "RetakesSiteAnnounce is loaded: it draws the site call, the built-in banner stays off.");
+        }
+        return loaded;
+    }
+
     // Chat colour codes are control characters; they show up as junk in a center alert.
     public static string StripColors(string text)
     {
@@ -135,6 +149,12 @@ public class AnnouncementService
 
         bool ctOnly = src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallCtOnly;
 
+        // The standalone RetakesSiteAnnounce plugin draws the on-screen call itself (it listens to the same
+        // bombsite event); with it loaded, or with SiteBannerStyle "Off", only the chat line and the voice stay.
+        bool bannerOff = StandaloneSiteAnnounceLoaded()
+            || src.utils.Config.LoadedConfig.Modules.Retakes.SiteBannerStyle.Trim().Equals("Off", StringComparison.OrdinalIgnoreCase);
+        bool showBanner = _centerEnabled && !bannerOff;
+
         foreach (var player in Utilities.GetPlayers())
         {
             // The Ts spawn on the site; the call is for the CTs (and spectators) unless configured otherwise.
@@ -147,7 +167,7 @@ public class AnnouncementService
             {
                 player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
 
-                if (_centerEnabled)
+                if (showBanner)
                 {
                     ShowSiteBanner(player, bombsite, centerHtml, centerText);
                 }
@@ -169,7 +189,7 @@ public class AnnouncementService
                 continue;
             }
 
-            if (!_centerEnabled)
+            if (!showBanner)
             {
                 continue;
             }

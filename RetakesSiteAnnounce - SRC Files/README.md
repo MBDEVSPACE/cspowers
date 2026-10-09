@@ -28,8 +28,9 @@ repository's server files and with cs2-retakes).
 1. Copy `plugins/RetakesSiteAnnounce/` into `addons/counterstrikesharp/plugins/`.
 2. Optionally copy `configs/plugins/RetakesSiteAnnounce/RetakesSiteAnnounce.json`; CounterStrikeSharp writes it with
    the defaults on first load otherwise.
-3. If you run the jRandomSkills retakes module, set `MapConfigSettings.EnableBombsiteAnnouncementCenter` to `false` in its
-   `configs/retakes.json` so its own banner does not show the call a second time.
+3. Nothing else: the jRandomSkills retakes module sees this plugin (it registers the `retakes_site_announce_version`
+   convar) and keeps its own site banner off while it is loaded, so the call is never shown twice. Its chat line and
+   agent voice line stay on.
 
 ## Config (`configs/plugins/RetakesSiteAnnounce/RetakesSiteAnnounce.json`)
 
