@@ -83,7 +83,7 @@ Every skill has a `Rarity` in `configs/skillsInfo.json` (`Common`, `Uncommon`, `
 ## 🧩 Skill combos
 Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so combos only come from Double Trouble and Rage; `0.15` is about one round in seven) of winning a second skill, up to `Combos.SkillsPerPlayer` skills in total (default `2`; set the chance to `1` for a combo every round or `SkillsPerPlayer` to `1` for the classic game). The first skill comes from the normal draw, the extra one is added from the pool so that nothing clashes: a skill is never paired with itself, with a skill in `SoloSkills` (skills that copy or replace the whole skill, plus Double Trouble and Rage which are combos themselves), with a skill from the same `ClashGroups` entry (speed boosts, flight/jump, invisibility, cameras, revives, decoys, smokes, damage multipliers, …), with a second skill that opens a target menu, or, unless `AllowMultipleUseKeySkills` is `true`, with a second skill fired by the use key. The HUD lists every held skill; the chat announces each extra one. Double Trouble adds its own extras on top of this and Rage always comes as Wallhack + Aimbot.
 
-## ✨ Current Skills (177)
+## ✨ Current Skills (178)
 <details>
 <summary>The table below lists all available skills in the game, along with their descriptions.</summary>
 
@@ -254,6 +254,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so comb
 | Thorns            | Your opponent will receive a portion of the damage that they inflicted on you                      | -                |
 | Throwing Knife    | Click [css_useSkill] to throw a knife. But watch out for others                                    | -                |
 | Thunder God       | Your decoys strike like lightning: every enemy near a landed decoy gets tased                      | 250 u / 2 decoys |
+| Time Lord         | Click [css_useSkill] to turn the last 7 seconds back: everyone returns to where they were and the fallen come back to life | 1 / round, 30 s  |
 | Toxic Smoke       | Your smoke grenades deal damage                                                                    | -                |
 | Tracker           | Choose a player who will leave a trail behind them                                                 | -                |
 | Tripwire          | Click [css_useSkill] to string a wire between two walls. Enemies who touch it appear on your radar | 20 s             |

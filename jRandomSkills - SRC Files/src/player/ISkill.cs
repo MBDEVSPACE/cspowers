@@ -228,6 +228,7 @@ public enum Skills
     Thorns,
     ThrowingKnife,
     ThunderGod,
+    TimeLord,
     ToxicSmoke,
     Tripwire,
     TrueArmor,

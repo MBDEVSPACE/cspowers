@@ -398,7 +398,7 @@ namespace src.utils
                 ["Cypher", "FalconEye", "ThirdEye", "Spectator", "Iana"],
                 ["GodMode", "Jester", "SecondLife", "Phoenix", "ReZombie"],
                 ["AntyHead", "OnlyHead"],
-                ["Anomaly", "Rewind"],
+                ["Anomaly", "Rewind", "TimeLord"],
                 ["Glue", "HomingNades", "Weightless"],
                 ["Baseball", "FrozenDecoy", "GravityDecoy", "MagneticDecoy", "FireRain", "ThunderGod"],
                 ["HealingSmoke", "ToxicSmoke", "SmokeJumper"],
