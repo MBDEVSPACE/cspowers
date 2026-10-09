@@ -115,6 +115,7 @@ public class AnnouncementService
     }
 
     private static bool _standaloneNoted;
+    private static bool _centerFlagNoted;
 
     // RetakesSiteAnnounce registers this convar while it is loaded.
     private static bool StandaloneSiteAnnounceLoaded()
@@ -154,11 +155,17 @@ public class AnnouncementService
         var retakesConfig = src.utils.Config.LoadedConfig.Modules.Retakes;
         bool standalone = retakesConfig.DeferToStandaloneSiteAnnounce && StandaloneSiteAnnounceLoaded();
         bool styleOff = retakesConfig.SiteBannerStyle.Trim().Equals("Off", StringComparison.OrdinalIgnoreCase);
-        bool showBanner = _centerEnabled && !standalone && !styleOff;
+        // One switch for the banner: Modules.Retakes.SiteBannerStyle in config.json. The old retakes.json flag
+        // EnableBombsiteAnnouncementCenter no longer matters (a false there silently hid the call).
+        bool showBanner = !standalone && !styleOff;
         string bannerState = showBanner ? "on"
-            : !_centerEnabled ? "off (EnableBombsiteAnnouncementCenter=false in retakes.json)"
             : standalone ? "off (RetakesSiteAnnounce draws it)"
             : "off (SiteBannerStyle=Off)";
+        if (!_centerEnabled && showBanner && !_centerFlagNoted)
+        {
+            _centerFlagNoted = true;
+            Logger.LogInfo("Announcement", "EnableBombsiteAnnouncementCenter=false in retakes.json is ignored; the banner follows SiteBannerStyle in config.json.");
+        }
 
         foreach (var player in Utilities.GetPlayers())
         {
