@@ -3092,24 +3092,6 @@
     "Rarity": "Common"
   },
   {
-    "ExtraSkills": 2,
-    "ExcludedSkills": "AreaReaper, Bankrupt, Bounty, CarefulBullets, Chameleon, Darkness, Deactivator, Deaf, DoubleTrouble, Duplicator, ExpensiveAmmo, Gambler, Giant, Glitch, Inheritance, Jammer, JetKick, JumpBan, JumpCurse, LifeSwap, Magnifier, Marked, MoneySwap, Mute, Nemesis, Nightmare, Poison, PrimaryBan, Rage, Thief, Voodoo, WildThrow",
-    "Weight": 1.0,
-    "NeedsTeammates": false,
-    "DisableOnFreezeTime": false,
-    "DisableOnPistolRound": false,
-    "OnlyTeam": 0,
-    "Color": "#ff7f50",
-    "Active": true,
-    "Name": "DoubleTrouble",
-    "HudDuration": null,
-    "DescriptionHudDuration": null,
-    "RequiredPermission": "",
-    "MaxPerServer": -1,
-    "MinPlayer": 0,
-    "Rarity": "Rare"
-  },
-  {
     "Weight": 1.0,
     "NeedsTeammates": false,
     "DisableOnFreezeTime": false,

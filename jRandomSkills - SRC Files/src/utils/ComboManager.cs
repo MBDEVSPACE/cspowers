@@ -108,13 +108,10 @@ namespace src.utils
             }
         }
 
-        // Skills the HUD should show for this player: the main skill plus extras, except that a skill whose
-        // only job is handing out others (Double Trouble) steps aside once its extras arrived.
+        // Skills the HUD should show for this player: the main skill plus extras.
         public static List<Skills> HudSkills(jSkill_PlayerInfo info)
         {
-            var list = new List<Skills>();
-            if (!(info.Skill == Skills.DoubleTrouble && info.ExtraSkills.Length > 0))
-                list.Add(info.Skill);
+            var list = new List<Skills> { info.Skill };
             list.AddRange(info.ExtraSkills);
             return list;
         }

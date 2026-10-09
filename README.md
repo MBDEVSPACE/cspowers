@@ -83,9 +83,9 @@ Every skill has a `Rarity` in `configs/skillsInfo.json` (`Common`, `Uncommon`, `
 `ServerInfo.Lines` in `config.json` are your own chat lines (server owner, host, whatever you like). They are shown to every player right after the welcome line when they join and repeated to everyone every `AdvertIntervalSeconds` (default 300, `0` turns the repeat off).
 
 ## 🧩 Skill combos
-Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so combos only come from Double Trouble and Rage; `0.15` is about one round in seven) of winning a second skill, up to `Combos.SkillsPerPlayer` skills in total (default `2`; set the chance to `1` for a combo every round or `SkillsPerPlayer` to `1` for the classic game). The first skill comes from the normal draw, the extra one is added from the pool so that nothing clashes: a skill is never paired with itself, with a skill in `SoloSkills` (skills that copy or replace the whole skill, plus Double Trouble and Rage which are combos themselves), with a skill from the same `ClashGroups` entry (speed boosts, flight/jump, invisibility, cameras, revives, decoys, smokes, damage multipliers, …), with a second skill that opens a target menu, or, unless `AllowMultipleUseKeySkills` is `true`, with a second skill fired by the use key. The HUD lists every held skill; the chat announces each extra one. Double Trouble adds its own extras on top of this and Rage always comes as Wallhack + Aimbot.
+Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about one round in ten; `0` leaves combos to Rage only) of winning a second skill, up to `Combos.SkillsPerPlayer` skills in total (default `2`; set the chance to `1` for a combo every round or `SkillsPerPlayer` to `1` for the classic game). The first skill comes from the normal draw, the extra one is added from the pool so that nothing clashes: a skill is never paired with itself, with a skill in `SoloSkills` (skills that copy or replace the whole skill, plus Rage which is a combo itself), with a skill from the same `ClashGroups` entry (speed boosts, flight/jump, invisibility, cameras, revives, decoys, smokes, damage multipliers, …), with a second skill that opens a target menu, or, unless `AllowMultipleUseKeySkills` is `true`, with a second skill fired by the use key. The HUD lists every held skill; the chat announces each extra one. Rage always comes as Wallhack + Aimbot.
 
-## ✨ Current Skills (178)
+## ✨ Current Skills (177)
 <details>
 <summary>The table below lists all available skills in the game, along with their descriptions.</summary>
 
@@ -128,7 +128,6 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0`, so comb
 | Demon Eye         | You deal damage to every enemy you are looking at                                                  | 2 s              |
 | Disarmament       | You have a random chance to make an enemy drop their weapon on hit                                 | (20 - 35)%       |
 | Dash              | Perform a second jump to dash                                                                      | -                |
-| Double Trouble    | You get a second random skill on top of this one                                                   | -                |
 | Dracula           | Hitting an enemy restores health equal to a percentage of the damage dealt                         | -                |
 | Duplicator        | Choose a player to copy their skill                                                                | -                |
 | Dwarf             | Random character size at the start of the round                                                    | (60 - 95)%       |

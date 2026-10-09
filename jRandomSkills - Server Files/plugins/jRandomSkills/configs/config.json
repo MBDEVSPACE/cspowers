@@ -327,7 +327,7 @@
   },
   "Combos": {
     "SkillsPerPlayer": 2,
-    "ExtraSkillChance": 0.0,
+    "ExtraSkillChance": 0.1,
     "AllowMultipleUseKeySkills": false,
     "SoloSkills": [
       "None",
@@ -337,7 +337,6 @@
       "Thief",
       "Inheritance",
       "Deactivator",
-      "DoubleTrouble",
       "Rage"
     ],
     "ClashGroups": [

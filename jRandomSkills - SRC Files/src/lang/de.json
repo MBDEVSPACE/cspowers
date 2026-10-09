@@ -690,9 +690,6 @@
   "guns_usage": "Verwendung: !guns öffnet das Menü, oder !guns <Gewehr> [Pistole], z. B. !guns ak47 deagle",
   "guns_menu_busy": "Schließe zuerst dein aktuelles Menü.",
 
-  "doubletrouble": "Doppelter Ärger",
-  "doubletrouble_desc": "Du bekommst zusätzlich eine zweite, zufällige Fähigkeit",
-  "doubletrouble_extra_info": "Deine zweite Fähigkeit: {0}",
 
   "rage": "Rage",
   "rage_desc": "Du siehst Gegner durch Wände und jeder Treffer zählt als Kopfschuss",
