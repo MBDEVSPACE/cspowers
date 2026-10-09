@@ -139,6 +139,8 @@ namespace src.player
 
                 if (isWarmup)
                 {
+                    // A warmup round with SkipWarmup on: cut it short once the round is fully up.
+                    Instance?.AddTimer(1f, () => SkillUtils.EndWarmupIfSkipped("warmup round"), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
                     setSkillTimer = Instance?.AddTimer(1f, SetSkill, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
                     Debug.WriteToDebug("RoundStart: warmup, SetSkill scheduled in 1.00s.", DebugCategory.Round);
                     return HookResult.Continue;
@@ -674,7 +676,7 @@ namespace src.player
                         if (playerTarget == null || !playerTarget.IsValid) return;
 
                         if (SkillsInfo.GetValue<bool>(randomSkill.Skill, "disableOnFreezeTime") && SkillUtils.IsFreezeTime())
-                            Instance?.AddTimer(Config.LoadedConfig.SkillTimeBeforeStart, () =>
+                            Instance?.AddTimer(SecondsUntilFreezeEnd(), () =>
                             {
                                 var playerTarget = Utilities.GetPlayerFromIndex((int)playerIndex);
                                 if (playerTarget == null || !playerTarget.IsValid) return;
@@ -858,7 +860,7 @@ namespace src.player
                 Instance?.AddTimer(.2f, () =>
                 {
                     if (SkillsInfo.GetValue<bool>(randomSkill.Skill, "disableOnFreezeTime") && SkillUtils.IsFreezeTime())
-                        Instance?.AddTimer(Config.LoadedConfig.SkillTimeBeforeStart, () =>
+                        Instance?.AddTimer(SecondsUntilFreezeEnd(), () =>
                         {
                             if (PlayerManager.GetPlayerByIndex(player!.Index)?.Skill != randomSkill.Skill) return;
                             Instance?.SkillAction(randomSkill.Skill.ToString(), "EnableSkill", [player]);
@@ -878,5 +880,13 @@ namespace src.player
         }
 
         public static DateTime GetFreezeTimeEnd() => freezeTimeEnd;
+
+        // A freeze-time-disabled skill is switched on when the freeze actually ends, not after a fixed wait
+        // (a 7 s wait on a 1 s retakes freeze kept the skill dead for most of the opening fight).
+        private static float SecondsUntilFreezeEnd()
+        {
+            double left = (freezeTimeEnd - DateTime.Now).TotalSeconds;
+            return (float)Math.Clamp(left + 0.1, 0.1, 60);
+        }
     }
 }

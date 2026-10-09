@@ -146,6 +146,7 @@ public class RetakesPlugin
     #endregion
 
     public bool IsPluginEnabled => RetakesEnabledConVar.Value;
+    public bool IsWaitingForPlayers => IsPluginEnabled && (_gameManager?.IsWaitingForPlayers ?? false);
 
     public RetakesPlugin(BasePlugin host)
     {

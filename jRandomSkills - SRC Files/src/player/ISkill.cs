@@ -101,7 +101,6 @@ public enum Skills
     Disarmament,
     Distancer,
     Dash,
-    DoubleTrouble,
     Dracula,
     Duplicator,
     Dwarf,

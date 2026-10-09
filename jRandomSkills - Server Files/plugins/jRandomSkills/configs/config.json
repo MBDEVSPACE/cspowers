@@ -5,6 +5,8 @@
     "GuidedBullet"
   ],
   "AutoAssignTeamOnJoin": true,
+  "SkipWarmup": true,
+  "SkillsUsableInFreezeTime": true,
   "GameMode": 3,
   "YourSkillChatInfo": true,
   "KillerSkillChatInfo": true,
@@ -327,7 +329,7 @@
   },
   "Combos": {
     "SkillsPerPlayer": 2,
-    "ExtraSkillChance": 0.0,
+    "ExtraSkillChance": 0.1,
     "AllowMultipleUseKeySkills": false,
     "SoloSkills": [
       "None",
@@ -337,7 +339,6 @@
       "Thief",
       "Inheritance",
       "Deactivator",
-      "DoubleTrouble",
       "Rage"
     ],
     "ClashGroups": [
@@ -376,6 +377,7 @@
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
       "SiteBannerStyle": "Screen",
+      "DeferToStandaloneSiteAnnounce": true,
       "SiteCallCtOnly": true,
       "RepeatSiteCallAfterPlant": false,
       "ScreenBannerMethod": "Pawn",

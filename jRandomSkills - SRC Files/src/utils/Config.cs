@@ -197,6 +197,12 @@ namespace src.utils
             // Put a joining player straight onto the smaller team (no team menu). With retakes on, the retakes
             // queue does this (QueueSettings.ShouldAutoJoinGame in retakes.json); this covers retakes off.
             public bool AutoAssignTeamOnJoin { get; set; } = true;
+            // End the warmup as soon as the map is up (and on any later warmup round), so play starts at once.
+            // The retakes "waiting for players" hold (GameSettings.MinimumPlayers in retakes.json) still applies.
+            public bool SkipWarmup { get; set; } = true;
+            // Skills work from the moment they are drawn, freeze time included: DisableOnFreezeTime in
+            // skillsInfo.json and the skills' own freeze-time checks are ignored.
+            public bool SkillsUsableInFreezeTime { get; set; } = true;
 
             public SettingsModel()
             {
@@ -378,15 +384,15 @@ namespace src.utils
             // from the pool and never clash with the ones already held. Double Trouble adds on top of this.
             public int SkillsPerPlayer { get; set; } = 2;
             // Chance (0-1) that a player wins an extra skill each round; rolled once per extra slot, so with
-            // SkillsPerPlayer 3 the third skill needs two wins in a row. 0.15 = roughly every seventh round.
-            public float ExtraSkillChance { get; set; } = 0f;
+            // SkillsPerPlayer 3 the third skill needs two wins in a row. 0.1 = roughly every tenth round.
+            public float ExtraSkillChance { get; set; } = 0.1f;
             // Two skills fired by the use key would trigger together; keep false so a player gets at most one.
             public bool AllowMultipleUseKeySkills { get; set; } = false;
             // Skills that are never combined with anything (they change or copy the whole skill, or are combos themselves).
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> SoloSkills { get; set; } =
             [
-                "None", "Gambler", "Chameleon", "Duplicator", "Thief", "Inheritance", "Deactivator", "DoubleTrouble", "Rage",
+                "None", "Gambler", "Chameleon", "Duplicator", "Thief", "Inheritance", "Deactivator", "Rage",
             ];
             // Skills in the same group are never held together (they fight over the same mechanic).
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
@@ -545,6 +551,9 @@ namespace src.utils
             // Html when entity spawning is blocked. With the standalone RetakesSiteAnnounce plugin loaded the banner
             // is off automatically, whatever this says.
             public string SiteBannerStyle { get; set; } = "Screen";
+            // true: when the standalone RetakesSiteAnnounce plugin is loaded, leave the on-screen call to it.
+            // false: draw the built-in banner anyway.
+            public bool DeferToStandaloneSiteAnnounce { get; set; } = true;
             // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
             public bool SiteCallCtOnly { get; set; } = true;
             // Show the site banner a second time a few seconds after the bomb is planted (stock retakes behaviour).

@@ -94,9 +94,33 @@ namespace src.utils
             target.EmitSound(soundEvent, new RecipientFilter(target), volume);
         }
 
+        // "Freeze time" as far as the skills are concerned: with SkillsUsableInFreezeTime the skills never see one.
         public static bool IsFreezeTime()
         {
+            if (Config.LoadedConfig?.SkillsUsableInFreezeTime == true) return false;
             return jRandomSkills.Instance?.GameRules?.FreezePeriod == true;
+        }
+
+        public static bool IsWarmup()
+        {
+            try
+            {
+                var rules = jRandomSkills.Instance?.GameRules;
+                return rules != null && rules.Handle != IntPtr.Zero && rules.WarmupPeriod;
+            }
+            catch { return false; }
+        }
+
+        // Ends a running warmup when SkipWarmup is on and nothing holds it (the retakes player wait).
+        public static void EndWarmupIfSkipped(string reason)
+        {
+            if (Config.LoadedConfig?.SkipWarmup != true) return;
+            if (!IsWarmup()) return;
+            if (jRandomSkills.Instance?.Retakes?.IsWaitingForPlayers == true) return;
+
+            Server.ExecuteCommand("mp_warmup_pausetimer 0");
+            Server.ExecuteCommand("mp_warmup_end");
+            Server.PrintToConsole($"[TiredPowers] Warmup ended ({reason}); set SkipWarmup=false in config.json to keep it.");
         }
 
         public static bool IsPistolRound()
@@ -344,6 +368,48 @@ namespace src.utils
                     return new Vector(randomSpawn.AbsOrigin.X, randomSpawn.AbsOrigin.Y, randomSpawn.AbsOrigin.Z);
             }
             return null;
+        }
+
+        // Where a revive skill puts the player back: by default right where they fell (a short step back from
+        // the killing blow, feet on the same ground), or a map spawn when the skill is configured that way or
+        // the death spot cannot be stood on (out of the map, in a hurt trigger).
+        public static Vector? GetRevivePoint(CCSPlayerController player, CCSPlayerPawn? pawn, bool atSpawn, float stepBack = 0f)
+        {
+            if (!atSpawn && pawn != null && pawn.IsValid && pawn.AbsOrigin != null && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE)
+            {
+                var origin = pawn.AbsOrigin;
+                if (origin.X != 0 || origin.Y != 0 || origin.Z != 0)
+                {
+                    float x = origin.X, y = origin.Y;
+                    if (stepBack > 0 && pawn.AbsVelocity != null)
+                    {
+                        // Undo the last bit of movement into the hit: a step back along the direction the player
+                        // was running, only while they were on the ground so a fall is never "stepped" into the air.
+                        var vel = pawn.AbsVelocity;
+                        float speed2D = MathF.Sqrt(vel.X * vel.X + vel.Y * vel.Y);
+                        bool onGround = (pawn.Flags & (uint)PlayerFlags.FL_ONGROUND) != 0;
+                        if (onGround && speed2D > 1f)
+                        {
+                            x -= vel.X / speed2D * stepBack;
+                            y -= vel.Y / speed2D * stepBack;
+                        }
+                    }
+                    return new Vector(x, y, origin.Z);
+                }
+            }
+            return GetSpawnPointVector(player);
+        }
+
+        // Damage from the map itself (a kill trigger, falling out of the world) means the spot is deadly:
+        // a revive there would die again at once.
+        public static bool IsDeadlySpotDamage(CTakeDamageInfo? info)
+        {
+            if (info == null || info.Handle == nint.Zero) return false;
+            var inflictor = info.Inflictor?.Value;
+            string? name = inflictor != null && inflictor.IsValid ? inflictor.DesignerName : null;
+            if (name != null && (name.StartsWith("trigger_hurt", StringComparison.Ordinal) || name == "worldspawn"))
+                return true;
+            return ((int)info.BitsDamageType & (int)(DamageTypes_t.DMG_DROWN | DamageTypes_t.DMG_RADIATION | DamageTypes_t.DMG_ACID)) != 0;
         }
 
         public static bool IsBulletDamage(CTakeDamageInfo? info)

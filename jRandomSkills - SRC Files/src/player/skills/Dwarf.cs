@@ -9,6 +9,8 @@ namespace src.player.skills
     public class Dwarf : ISkill
     {
         private const Skills skillName = Skills.Dwarf;
+        // Own copy of the rolled size: SkillChance is shared with any other skill the player holds.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, float> rolledScale = [];
 
         public static void LoadSkill()
         {
@@ -35,6 +37,7 @@ namespace src.player.skills
                 float newSize = (float)Instance.Random.NextDouble() * (SkillsInfo.GetValue<float>(skillName, "maxScale") - SkillsInfo.GetValue<float>(skillName, "minScale")) + SkillsInfo.GetValue<float>(skillName, "minScale");
                 newSize = (float)Math.Round(newSize, 2);
                 playerInfo.SkillChance = newSize;
+                rolledScale[player.Index] = newSize;
 
                 SkillUtils.ChangePlayerScale(player, newSize);
                 SkillUtils.PrintToChat(player, $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newSize)}",
@@ -51,7 +54,7 @@ namespace src.player.skills
             {
                 if (!Instance.IsPlayerValid(player)) continue;
                 var playerInfo = PlayerManager.GetPlayerByIndex(player.Index);
-                if (playerInfo?.HasSkill(skillName) != true || playerInfo.SkillChance is not float expected || expected <= 0f) continue;
+                if (playerInfo?.HasSkill(skillName) != true || !rolledScale.TryGetValue(player.Index, out float expected) || expected <= 0f) continue;
 
                 var pawn = player.PlayerPawn?.Value;
                 if (pawn == null || !pawn.IsValid || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
@@ -67,6 +70,7 @@ namespace src.player.skills
         {
             var playerInfo = PlayerManager.GetPlayerByIndex(player!.Index);
             if (playerInfo == null) return;
+            rolledScale.TryRemove(player.Index, out _);
 
             var playerPawn = player.PlayerPawn?.Value;
             if (playerPawn != null && playerPawn?.CBodyComponent != null)
