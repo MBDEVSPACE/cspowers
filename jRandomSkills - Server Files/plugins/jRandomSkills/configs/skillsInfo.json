@@ -2494,8 +2494,8 @@
     "Rarity": "Uncommon"
   },
   {
-    "MaxSpeed": 350.0,
-    "JumpVelocity": 300.0,
+    "MaxSpeed": 500.0,
+    "JumpVelocity": 301.99,
     "JumpBoost": 1.0,
     "Weight": 1.0,
     "NeedsTeammates": false,
