@@ -11,10 +11,11 @@ public class BombSettings
     [JsonPropertyName("IsAutoPlantEnabled")]
     public bool IsAutoPlantEnabled { get; set; } = true;
 
-    // "Weapon" (default): the planter spawns holding the C4 and the plugin arms it at freeze end, so the
-    // game's own plant code plants it (no entity is created by the plugin; safe on any CS2 build).
-    // "Entity": the old way, a planted_c4 entity is created directly (needs CounterStrikeSharp to match the
-    // CS2 build; with EntitySpawnSafety blocking it the Weapon way is used anyway).
+    // "Auto" (default): a planted_c4 is created at freeze end while entity spawning is allowed (EntitySpawnSafety);
+    //   while it is blocked the planter spawns holding the C4, the plugin tries to arm it so the game plants it,
+    //   and failing that the planter is told to plant by hand (one click plants instantly).
+    // "Entity": always create the planted_c4 (falls back like Auto while spawning is blocked).
+    // "Weapon": never create an entity; arm the planter's C4 (the game may refuse without a held button).
     [JsonPropertyName("AutoPlantMethod")]
-    public string AutoPlantMethod { get; set; } = "Weapon";
+    public string AutoPlantMethod { get; set; } = "Auto";
 }

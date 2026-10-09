@@ -41,7 +41,7 @@
   },
   "BombSettings": {
     "IsAutoPlantEnabled": true,
-    "AutoPlantMethod": "Weapon"
+    "AutoPlantMethod": "Auto"
   },
   "CommandsSettings": {
     "Admin": {

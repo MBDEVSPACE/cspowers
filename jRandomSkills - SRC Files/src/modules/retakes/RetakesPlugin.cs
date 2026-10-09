@@ -307,7 +307,8 @@ public class RetakesPlugin
 
             // Auto-plant: "Weapon" arms the planter's own C4 (no plugin-made entity); "Entity" spawns a planted_c4
             // and is only possible while entity spawning is allowed.
-            bool entityMethod = string.Equals(Config.Bomb.AutoPlantMethod?.Trim(), "Entity", StringComparison.OrdinalIgnoreCase);
+            bool weaponOnly = string.Equals(Config.Bomb.AutoPlantMethod?.Trim(), "Weapon", StringComparison.OrdinalIgnoreCase);
+            bool entityMethod = !weaponOnly; // "Auto" and "Entity" both create the planted_c4 while spawning is allowed
             bool entityAutoPlant = Config.Bomb.IsAutoPlantEnabled && entityMethod && !src.utils.EntitySafety.SpawningBlocked;
 
             // Initialize Event Handlers
@@ -320,7 +321,7 @@ public class RetakesPlugin
                 _announcementService,
                 entityAutoPlant,
                 Config.Bomb.IsAutoPlantEnabled && !entityAutoPlant,
-                Config.Bomb.IsAutoPlantEnabled && !entityAutoPlant && !entityMethod,
+                Config.Bomb.IsAutoPlantEnabled && !entityAutoPlant,
                 Config.Game.EnableFallbackAllocation,
                 Config.MapConfig.EnableFallbackBombsiteAnnouncement,
                 _random
@@ -333,8 +334,8 @@ public class RetakesPlugin
                 : entityAutoPlant
                     ? "Bomb mode: auto-plant (planted_c4 entity created by the plugin)"
                     : entityMethod
-                        ? "Bomb mode: auto-plant by arming the planter's C4 (AutoPlantMethod=Entity asked for, but entity spawning is blocked on this CS2 build)"
-                        : "Bomb mode: auto-plant by arming the planter's C4 (the game plants it; no plugin-made entity)");
+                        ? "Bomb mode: entity spawning is blocked on this CS2 build (EntitySpawnSafety), so the planter spawns with the C4; the plugin tries to arm it and otherwise the planter plants with one click"
+                        : "Bomb mode: auto-plant by arming the planter's C4 (AutoPlantMethod=Weapon; no plugin-made entity)");
 
             // Initialize Commands
             _forceBombsiteCommand = new ForceBombsiteCommand(this, _roundEventHandlers);
