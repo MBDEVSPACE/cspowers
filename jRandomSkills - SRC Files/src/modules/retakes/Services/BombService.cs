@@ -52,6 +52,8 @@ public class BombService
         plantedC4.BombSite = (int)bombsite;
         plantedC4.BombTicking = true;
         plantedC4.CannotBeDefused = false;
+        // A real plant owns the bomb by the planter pawn; code that follows the owner must not find nothing.
+        plantedC4.OwnerEntity.Raw = playerPawn.EntityHandle.Raw;
 
         plantedC4.DispatchSpawn();
 

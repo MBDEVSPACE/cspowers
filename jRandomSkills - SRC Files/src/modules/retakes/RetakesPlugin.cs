@@ -305,6 +305,11 @@ public class RetakesPlugin
                 Config.MapConfig.EnablePlantLocationAnnouncement
             );
 
+            // Auto-plant: "Weapon" arms the planter's own C4 (no plugin-made entity); "Entity" spawns a planted_c4
+            // and is only possible while entity spawning is allowed.
+            bool entityMethod = string.Equals(Config.Bomb.AutoPlantMethod?.Trim(), "Entity", StringComparison.OrdinalIgnoreCase);
+            bool entityAutoPlant = Config.Bomb.IsAutoPlantEnabled && entityMethod && !src.utils.EntitySafety.SpawningBlocked;
+
             // Initialize Event Handlers
             _roundEventHandlers = new RoundEventHandlers(
                 this,
@@ -313,8 +318,9 @@ public class RetakesPlugin
                 _breakerManager,
                 _allocationService,
                 _announcementService,
-                Config.Bomb.IsAutoPlantEnabled && !src.utils.EntitySafety.SpawningBlocked,
-                Config.Bomb.IsAutoPlantEnabled && src.utils.EntitySafety.SpawningBlocked,
+                entityAutoPlant,
+                Config.Bomb.IsAutoPlantEnabled && !entityAutoPlant,
+                Config.Bomb.IsAutoPlantEnabled && !entityAutoPlant && !entityMethod,
                 Config.Game.EnableFallbackAllocation,
                 Config.MapConfig.EnableFallbackBombsiteAnnouncement,
                 _random
@@ -324,9 +330,11 @@ public class RetakesPlugin
 
             Utils.Logger.LogInfo("Bomb", !Config.Bomb.IsAutoPlantEnabled
                 ? "Bomb mode: manual plant (IsAutoPlantEnabled=false)"
-                : src.utils.EntitySafety.SpawningBlocked
-                    ? "Bomb mode: quick plant (auto-plant needs entity spawning, which is blocked on this CS2 build; the planter spawns with the bomb and plants with one click)"
-                    : "Bomb mode: auto-plant");
+                : entityAutoPlant
+                    ? "Bomb mode: auto-plant (planted_c4 entity created by the plugin)"
+                    : entityMethod
+                        ? "Bomb mode: auto-plant by arming the planter's C4 (AutoPlantMethod=Entity asked for, but entity spawning is blocked on this CS2 build)"
+                        : "Bomb mode: auto-plant by arming the planter's C4 (the game plants it; no plugin-made entity)");
 
             // Initialize Commands
             _forceBombsiteCommand = new ForceBombsiteCommand(this, _roundEventHandlers);
