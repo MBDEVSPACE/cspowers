@@ -94,9 +94,33 @@ namespace src.utils
             target.EmitSound(soundEvent, new RecipientFilter(target), volume);
         }
 
+        // "Freeze time" as far as the skills are concerned: with SkillsUsableInFreezeTime the skills never see one.
         public static bool IsFreezeTime()
         {
+            if (Config.LoadedConfig?.SkillsUsableInFreezeTime == true) return false;
             return jRandomSkills.Instance?.GameRules?.FreezePeriod == true;
+        }
+
+        public static bool IsWarmup()
+        {
+            try
+            {
+                var rules = jRandomSkills.Instance?.GameRules;
+                return rules != null && rules.Handle != IntPtr.Zero && rules.WarmupPeriod;
+            }
+            catch { return false; }
+        }
+
+        // Ends a running warmup when SkipWarmup is on and nothing holds it (the retakes player wait).
+        public static void EndWarmupIfSkipped(string reason)
+        {
+            if (Config.LoadedConfig?.SkipWarmup != true) return;
+            if (!IsWarmup()) return;
+            if (jRandomSkills.Instance?.Retakes?.IsWaitingForPlayers == true) return;
+
+            Server.ExecuteCommand("mp_warmup_pausetimer 0");
+            Server.ExecuteCommand("mp_warmup_end");
+            Server.PrintToConsole($"[TiredPowers] Warmup ended ({reason}); set SkipWarmup=false in config.json to keep it.");
         }
 
         public static bool IsPistolRound()

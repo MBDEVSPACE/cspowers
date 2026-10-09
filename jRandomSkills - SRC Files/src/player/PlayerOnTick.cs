@@ -47,6 +47,9 @@ namespace src.player
             Instance.GameRules = null;
             Event.OnMapChange();
             BotManager.Initialize();
+
+            // After the retakes config has run (it executes 1 s after map start) and the game rules exist.
+            Instance.AddTimer(3f, () => SkillUtils.EndWarmupIfSkipped("map start"), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
         }
 
         private static void OnMapEnd()

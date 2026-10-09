@@ -386,6 +386,10 @@ All skills can be customized in the **`config.cfg`** / **`skillsInfo.json`** fil
                                          // "Attack3", "Scoreboard", "Inspect"
         "SkillTimeBeforeStart": 7.0,     // How many seconds before freeze time ends should skills
                                          // drawing be completed? (freezetime - SkillTimeBeforeStart)
+        "SkipWarmup": true,              // End the warmup as soon as the map is up (the retakes
+                                         // MinimumPlayers wait still holds the game)
+        "SkillsUsableInFreezeTime": true, // Skills work from the moment they are drawn, freeze time
+                                         // included (DisableOnFreezeTime in skillsInfo.json is ignored)
         "SkillHudDuration": -1.0,       // How long should the HUD be visible for?
         "SkillDescriptionDuration": 7.0, // How long should the skill description be visible for?
         "DisplayAlwaysDescription":false,// Always display skill description (SkillDescriptionDuration = 9999)

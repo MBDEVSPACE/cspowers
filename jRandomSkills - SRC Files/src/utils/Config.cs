@@ -197,6 +197,12 @@ namespace src.utils
             // Put a joining player straight onto the smaller team (no team menu). With retakes on, the retakes
             // queue does this (QueueSettings.ShouldAutoJoinGame in retakes.json); this covers retakes off.
             public bool AutoAssignTeamOnJoin { get; set; } = true;
+            // End the warmup as soon as the map is up (and on any later warmup round), so play starts at once.
+            // The retakes "waiting for players" hold (GameSettings.MinimumPlayers in retakes.json) still applies.
+            public bool SkipWarmup { get; set; } = true;
+            // Skills work from the moment they are drawn, freeze time included: DisableOnFreezeTime in
+            // skillsInfo.json and the skills' own freeze-time checks are ignored.
+            public bool SkillsUsableInFreezeTime { get; set; } = true;
 
             public SettingsModel()
             {
