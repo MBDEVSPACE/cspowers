@@ -375,6 +375,7 @@
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
       "SiteBannerStyle": "Screen",
+      "DeferToStandaloneSiteAnnounce": true,
       "SiteCallCtOnly": true,
       "RepeatSiteCallAfterPlant": false,
       "ScreenBannerMethod": "Pawn",

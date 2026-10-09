@@ -151,9 +151,14 @@ public class AnnouncementService
 
         // The standalone RetakesSiteAnnounce plugin draws the on-screen call itself (it listens to the same
         // bombsite event); with it loaded, or with SiteBannerStyle "Off", only the chat line and the voice stay.
-        bool bannerOff = StandaloneSiteAnnounceLoaded()
-            || src.utils.Config.LoadedConfig.Modules.Retakes.SiteBannerStyle.Trim().Equals("Off", StringComparison.OrdinalIgnoreCase);
-        bool showBanner = _centerEnabled && !bannerOff;
+        var retakesConfig = src.utils.Config.LoadedConfig.Modules.Retakes;
+        bool standalone = retakesConfig.DeferToStandaloneSiteAnnounce && StandaloneSiteAnnounceLoaded();
+        bool styleOff = retakesConfig.SiteBannerStyle.Trim().Equals("Off", StringComparison.OrdinalIgnoreCase);
+        bool showBanner = _centerEnabled && !standalone && !styleOff;
+        string bannerState = showBanner ? "on"
+            : !_centerEnabled ? "off (EnableBombsiteAnnouncementCenter=false in retakes.json)"
+            : standalone ? "off (RetakesSiteAnnounce draws it)"
+            : "off (SiteBannerStyle=Off)";
 
         foreach (var player in Utilities.GetPlayers())
         {
@@ -197,6 +202,6 @@ public class AnnouncementService
             ShowSiteBanner(player, bombsite, centerHtml, centerText);
         }
 
-        Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT)");
+        Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT): CT only={ctOnly}, banner {bannerState}, voice={_voicesEnabled}");
     }
 }

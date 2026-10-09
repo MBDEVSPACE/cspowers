@@ -545,6 +545,9 @@ namespace src.utils
             // Html when entity spawning is blocked. With the standalone RetakesSiteAnnounce plugin loaded the banner
             // is off automatically, whatever this says.
             public string SiteBannerStyle { get; set; } = "Screen";
+            // true: when the standalone RetakesSiteAnnounce plugin is loaded, leave the on-screen call to it.
+            // false: draw the built-in banner anyway.
+            public bool DeferToStandaloneSiteAnnounce { get; set; } = true;
             // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
             public bool SiteCallCtOnly { get; set; } = true;
             // Show the site banner a second time a few seconds after the bomb is planted (stock retakes behaviour).
