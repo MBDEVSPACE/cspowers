@@ -25,6 +25,9 @@ namespace src.player.skills
 
         public static void OnTick()
         {
+            if (SkillPlayerInfo.IsEmpty) return;
+            bool hudFrame = SkillUtils.IsHudFrame();
+
             foreach (var player in PlayerManager.GetTickPlayers())
             {
                 if (player == null || !player.IsValid) continue;
@@ -34,7 +37,8 @@ namespace src.player.skills
                 {
                     if (SkillPlayerInfo.TryGetValue(player.Index, out var skillInfo))
                     {
-                        UpdateHUD(player, skillInfo);
+                        // The cooldown text only changes once a second; building it every tick was wasted work.
+                        if (hudFrame) UpdateHUD(player, skillInfo);
 
                         if (skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "duration")) > DateTime.Now)
                             LookAtEnemy(player);
