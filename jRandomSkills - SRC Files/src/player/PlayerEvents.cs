@@ -639,6 +639,9 @@ namespace src.player
         // A vertical speed rise well above the server's jump impulse in one tick is never the player's own
         // movement; one console line names the skills active at that moment plus the server's jump cvars.
         private static readonly Dictionary<uint, (float Vz, bool OnGround, DateTime LastLog)> launchTrack = [];
+        // Horizontal speed in the air: the game adds at most sv_airaccelerate * 30 / 64 (about 6 u/s) per tick,
+        // so a bigger gain while airborne is an outside push.
+        private static readonly Dictionary<uint, (float Speed2D, int Boosts, float Gained, DateTime LastLog)> airTrack = [];
 
         private static void ReportLaunches()
         {
@@ -673,6 +676,30 @@ namespace src.player
                     }
 
                     launchTrack[player.Index] = (vz, onGround, prev.LastLog);
+
+                    float horizontal = MathF.Sqrt(pawn.AbsVelocity.X * pawn.AbsVelocity.X + pawn.AbsVelocity.Y * pawn.AbsVelocity.Y);
+                    airTrack.TryGetValue(player.Index, out var air);
+                    if (!onGround && !prev.OnGround && pawn.MoveType == MoveType_t.MOVETYPE_WALK)
+                    {
+                        float gain = horizontal - air.Speed2D;
+                        if (gain > 40f)
+                        {
+                            air.Boosts++;
+                            air.Gained += gain;
+                            if ((DateTime.Now - air.LastLog).TotalSeconds >= 3)
+                            {
+                                air.LastLog = DateTime.Now;
+                                var info = PlayerManager.GetPlayerByIndex(player.Index);
+                                string own = info == null ? "-" : string.Join("+", info.AllSkills().Where(k => k != Skills.None));
+                                string active = string.Join(",", _activeSkillsList.Where(k => k != Skills.None));
+                                int humans = PlayerManager.GetTickPlayers().Count(p => p != null && p.IsValid && !p.IsBot);
+                                Server.PrintToConsole($"[TiredPowers] AIRBOOST {player.PlayerName}: speed {air.Speed2D:F0} -> {horizontal:F0} (+{gain:F0} in one tick while airborne; {air.Boosts} such ticks, +{air.Gained:F0} total since last line) vz={vz:F0} velMod={pawn.VelocityModifier:F2} gravity={pawn.ActualGravityScale:F2} | own skills: {own} | skills active this round: {active} | {humans} humans");
+                                air.Boosts = 0; air.Gained = 0;
+                            }
+                        }
+                    }
+                    air.Speed2D = horizontal;
+                    airTrack[player.Index] = air;
                 }
             }
             catch { }
