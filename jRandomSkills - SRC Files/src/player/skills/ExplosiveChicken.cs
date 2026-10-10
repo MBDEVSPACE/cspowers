@@ -140,8 +140,12 @@ namespace src.player.skills
 
         private static void HandleExplosionHit(CBaseEntity damagedEntity, CTakeDamageInfo damageInfo)
         {
+            // The HE projectile is the attacker; with the env_explosion fallback the owner is the attacker and
+            // the explosion entity the inflictor.
             var nade = damageInfo.Attacker?.Value;
-            if (nade == null || !nade.IsValid || nade.DesignerName != "hegrenade_projectile") return;
+            if (nade == null || !nade.IsValid || (nade.DesignerName != "hegrenade_projectile" && nade.DesignerName != "env_explosion"))
+                nade = damageInfo.Inflictor?.Value;
+            if (nade == null || !nade.IsValid || (nade.DesignerName != "hegrenade_projectile" && nade.DesignerName != "env_explosion")) return;
             if (string.IsNullOrEmpty(nade.Globalname) || !nade.Globalname.StartsWith(nadePrefix)) return;
 
             var parts = nade.Globalname[nadePrefix.Length..].Split('_');
@@ -285,8 +289,18 @@ namespace src.player.skills
             RemoveChicken(skillInfo);
             skillInfo.Cooldown = DateTime.Now;
 
-            nades[Server.TickCount] = (team, ownerIndex);
-            SkillUtils.CreateHEGrenadeProjectile(pos, angle, new Vector(0, 0, -10), team);
+            float damage = SkillsInfo.GetValue<float>(skillName, "explosionDamage");
+            float radius = SkillsInfo.GetValue<float>(skillName, "explosionRadius");
+
+            if (SkillUtils.HEGrenadeAvailable)
+            {
+                nades[Server.TickCount] = (team, ownerIndex);
+                SkillUtils.CreateHEGrenadeProjectile(pos, angle, new Vector(0, 0, -10), team);
+                return;
+            }
+
+            // No HE signature on this CS2 build: a plain blast owned by the player does the damage instead.
+            SkillUtils.CreateExplosion(pos, damage, radius, owner.PlayerPawn.Value, $"{nadePrefix}{team}_{ownerIndex}_0");
         }
 
         private static void RemoveChicken(PlayerSkillInfo skillInfo)
@@ -306,20 +320,25 @@ namespace src.player.skills
             var heProjectile = entity.As<CBaseCSGrenadeProjectile>();
             if (heProjectile == null || !heProjectile.IsValid) return;
 
+            // Ours when it spawned in the tick the chicken blew up (the spawn angles alone were not a reliable
+            // mark: physics can change them before the next frame and the damage was then never set).
             int spawnTick = Server.TickCount;
+            if (!nades.TryRemove(spawnTick, out var source))
+            {
+                if (heProjectile.AbsRotation == null) return;
+                if (!(NearlyEquals(angle.X, heProjectile.AbsRotation.X) && NearlyEquals(angle.Y, heProjectile.AbsRotation.Y) && NearlyEquals(angle.Z, heProjectile.AbsRotation.Z)))
+                    return;
+            }
 
             Server.NextFrame(() =>
             {
-                if (heProjectile == null || !heProjectile.IsValid || heProjectile.AbsRotation == null) return;
-                if (!(NearlyEquals(angle.X, heProjectile.AbsRotation.X) && NearlyEquals(angle.Y, heProjectile.AbsRotation.Y) && NearlyEquals(angle.Z, heProjectile.AbsRotation.Z)))
-                    return;
+                if (heProjectile == null || !heProjectile.IsValid) return;
 
                 heProjectile.TicksAtZeroVelocity = 100;
                 heProjectile.Damage = SkillsInfo.GetValue<float>(skillName, "explosionDamage");
                 heProjectile.DmgRadius = SkillsInfo.GetValue<float>(skillName, "explosionRadius");
                 heProjectile.DetonateTime = 0;
-
-                if (nades.TryRemove(spawnTick, out var source))
+                if (source.Owner != 0)
                     heProjectile.Globalname = $"{nadePrefix}{source.Team}_{source.Owner}_{heProjectile.Index}";
             });
         }

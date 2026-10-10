@@ -633,6 +633,45 @@ namespace src.player
                 }
             }
             PerfLog.Sample("OnTick(skills)", perfStart);
+            ReportLaunches();
+        }
+
+        // A vertical speed jump well above a normal jump (about 302 u/s) in one tick is never the player's own
+        // movement; one console line names the skills active at that moment so the source can be found.
+        private static readonly Dictionary<uint, (float Vz, bool OnGround, DateTime LastLog)> launchTrack = [];
+
+        private static void ReportLaunches()
+        {
+            try
+            {
+                foreach (var player in PlayerManager.GetTickPlayers())
+                {
+                    if (player == null || !player.IsValid || player.IsBot) continue;
+                    var pawn = player.PlayerPawn.Value;
+                    if (pawn == null || !pawn.IsValid || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE || pawn.AbsVelocity == null) continue;
+
+                    float vz = pawn.AbsVelocity.Z;
+                    bool onGround = (pawn.Flags & (uint)PlayerFlags.FL_ONGROUND) != 0;
+                    launchTrack.TryGetValue(player.Index, out var prev);
+
+                    if (prev.Vz != 0 || prev.OnGround)
+                    {
+                        float delta = vz - prev.Vz;
+                        if (delta > 330f && (DateTime.Now - prev.LastLog).TotalSeconds >= 3)
+                        {
+                            prev.LastLog = DateTime.Now;
+                            var info = PlayerManager.GetPlayerByIndex(player.Index);
+                            string own = info == null ? "-" : string.Join("+", info.AllSkills().Where(k => k != Skills.None));
+                            string active = string.Join(",", _activeSkillsList.Where(k => k != Skills.None));
+                            int humans = PlayerManager.GetTickPlayers().Count(p => p != null && p.IsValid && !p.IsBot);
+                            Server.PrintToConsole($"[TiredPowers] LAUNCH {player.PlayerName}: vz {prev.Vz:F0} -> {vz:F0} (+{delta:F0}) wasOnGround={prev.OnGround} gravity={pawn.ActualGravityScale:F2} velMod={pawn.VelocityModifier:F2} | own skills: {own} | skills active this round: {active} | {humans} humans");
+                        }
+                    }
+
+                    launchTrack[player.Index] = (vz, onGround, prev.LastLog);
+                }
+            }
+            catch { }
         }
 
         private static void OnPlayerConnectedBot(int playerSlot)
