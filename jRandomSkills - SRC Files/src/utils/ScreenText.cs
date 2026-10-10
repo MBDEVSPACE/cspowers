@@ -11,9 +11,9 @@ namespace src.utils
     // entity kept in front of the eyes, the way CS2-GameHUD (used by InfoTop and similar plugins) does it. Only
     // the owner receives the entity.
     //
-    // Lifecycle follows GameHUD: ONE text entity per player, created on first use and kept for the whole map.
-    // Showing sets its message, hiding blanks it; the entity is only removed when the player leaves. Killing and
-    // re-creating parented entities mid-round is exactly the kind of thing that can crash the engine.
+    // Lifecycle: the text entity exists only while a banner is visible. Hiding unparents it and removes it a frame
+    // later; the next banner creates a fresh one. Nothing stays parented to a player pawn between banners, so
+    // the hierarchy cannot touch the pawn's movement or networking outside those few seconds.
     //
     // ScreenTextMethod:
     //   Pawn   - parented to the player pawn and re-aimed from the view angles every tick (GameHUD default).
@@ -202,15 +202,13 @@ namespace src.utils
             return orient;
         }
 
-        // Blank the text; the entity stays for the next call.
+        // Unparent and remove the text; the next call creates a new one.
         public static void Hide(uint playerIndex)
         {
             if (!entries.TryGetValue(playerIndex, out var entry) || !entry.Visible) return;
 
             entry.Visible = false;
-            var ent = Utilities.GetEntityFromIndex<CPointWorldText>((int)entry.TextIndex);
-            if (ent != null && ent.IsValid)
-                ent.AcceptInput("SetMessage", null, null, "");
+            RemoveEntities(entry);
         }
 
         public static void HideAll()
@@ -231,18 +229,39 @@ namespace src.utils
 
         private static void RemoveEntities(Entry entry)
         {
+            // Detach from the pawn first, then remove a frame later, so no follower is ever killed while parented.
+            uint textIndex = entry.TextIndex, orientIndex = entry.OrientIndex;
             try
             {
-                var ent = Utilities.GetEntityFromIndex<CPointWorldText>((int)entry.TextIndex);
-                if (ent != null && ent.IsValid) ent.Remove();
+                var ent = Utilities.GetEntityFromIndex<CPointWorldText>((int)textIndex);
+                if (ent != null && ent.IsValid)
+                {
+                    ent.AcceptInput("SetMessage", null, null, "");
+                    ent.AcceptInput("ClearParent");
+                }
             }
             catch { }
             try
             {
-                var orient = Utilities.GetEntityFromIndex<CPointOrient>((int)entry.OrientIndex);
-                if (orient != null && orient.IsValid) orient.Remove();
+                var orient = Utilities.GetEntityFromIndex<CPointOrient>((int)orientIndex);
+                if (orient != null && orient.IsValid) orient.AcceptInput("ClearParent");
             }
             catch { }
+            Server.NextFrame(() =>
+            {
+                try
+                {
+                    var ent = Utilities.GetEntityFromIndex<CPointWorldText>((int)textIndex);
+                    if (ent != null && ent.IsValid) ent.Remove();
+                }
+                catch { }
+                try
+                {
+                    var orient = Utilities.GetEntityFromIndex<CPointOrient>((int)orientIndex);
+                    if (orient != null && orient.IsValid) orient.Remove();
+                }
+                catch { }
+            });
             entry.TextIndex = 0;
             entry.OrientIndex = 0;
             entry.ParentHandle = 0;

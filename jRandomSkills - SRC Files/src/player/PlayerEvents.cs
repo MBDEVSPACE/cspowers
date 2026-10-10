@@ -939,9 +939,6 @@ namespace src.player
             Utilities.SetStateChanged(pawn, "CBasePlayerPawn", "m_iHideHUD");
 
             player.ReplicateConVar("sv_disable_radar", "0");
-            // Movement cvars back on the server's values: a client left with bhop values predicts jumps wrongly.
-            skills.BunnyHop.ResetClientCvars(player);
-
             // Gravity back to normal: a lowered scale (Astronaut, Gravity Decoy) that outlived its skill made every
             // jump go further for the rest of the map.
             if (pawn.ActualGravityScale != 1f)
