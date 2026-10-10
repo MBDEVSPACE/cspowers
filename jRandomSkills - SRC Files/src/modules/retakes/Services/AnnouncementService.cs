@@ -61,7 +61,52 @@ public class AnnouncementService
 
     private static bool _screenFallbackNoted;
 
-    private static void ShowSiteBanner(CCSPlayerController player, Bombsite bombsite, string bannerHtml, string plainText)
+    // The call is kept pending for a while: at round start a player is often not on a team or not alive yet
+    // (queue placement, late spawn) and the on-screen text needs a live pawn. A short timer then draws it for
+    // every eligible player as soon as they are alive, once each.
+    private Bombsite? _pendingSite;
+    private DateTime _pendingUntil = DateTime.MinValue;
+    private readonly HashSet<uint> _pendingShown = [];
+    private CounterStrikeSharp.API.Modules.Timers.Timer? _pendingTimer;
+    private const float PendingSeconds = 20f;
+
+    private void StartPending(Bombsite bombsite)
+    {
+        _pendingSite = bombsite;
+        _pendingUntil = DateTime.Now.AddSeconds(PendingSeconds);
+        _pendingShown.Clear();
+
+        _pendingTimer ??= _plugin.AddTimer(0.25f, PendingTick,
+            CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT | CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
+    }
+
+    private void PendingTick()
+    {
+        if (_pendingSite == null || DateTime.Now > _pendingUntil)
+        {
+            _pendingSite = null;
+            _pendingTimer?.Kill();
+            _pendingTimer = null;
+            return;
+        }
+
+        var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
+        var site = _pendingSite.Value;
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (player == null || !player.IsValid || player.IsBot) continue;
+            if (_pendingShown.Contains(player.Index)) continue;
+            if (retakes.SiteCallCtOnly && player.Team == CounterStrikeSharp.API.Modules.Utils.CsTeam.Terrorist) continue;
+            if (player.Team is not (CounterStrikeSharp.API.Modules.Utils.CsTeam.CounterTerrorist or CounterStrikeSharp.API.Modules.Utils.CsTeam.Terrorist)) continue;
+
+            if (ShowSiteBanner(player, site, BannerHtml(site), $"SITE {site}"))
+                _pendingShown.Add(player.Index);
+        }
+    }
+
+    // true: shown (or handed to the HUD). false: the on-screen text needs a live pawn and this player has none
+    // yet; the pending loop tries again.
+    private static bool ShowSiteBanner(CCSPlayerController player, Bombsite bombsite, string bannerHtml, string plainText)
     {
         var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
         float seconds = Math.Max(1f, retakes.SiteBannerSeconds);
@@ -72,20 +117,31 @@ public class AnnouncementService
             var color = ParseColor(bombsite == Bombsite.A ? retakes.ScreenBannerColorA : retakes.ScreenBannerColorB, bombsite == Bombsite.A ? System.Drawing.Color.FromArgb(255, 80, 80) : System.Drawing.Color.FromArgb(80, 160, 255));
             var style = new src.utils.ScreenText.Style(retakes.ScreenBannerX, retakes.ScreenBannerY, retakes.ScreenBannerZ, retakes.ScreenBannerFontSize, retakes.ScreenBannerUnitsPerPx, retakes.ScreenBannerFont, retakes.ScreenBannerBackgroundBorder, retakes.ScreenBannerBackgroundBorder);
             if (src.utils.ScreenText.Show(player, $"SITE {bombsite}", color, style, seconds, src.utils.ScreenText.ParseMethod(retakes.ScreenBannerMethod)))
-                return;
+                return true;
 
-            if (!_screenFallbackNoted)
+            if (src.utils.ScreenText.Available)
+            {
+                var pawn = player.PlayerPawn.Value;
+                bool alive = pawn != null && pawn.IsValid && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE;
+                if (!alive) return false; // not spawned yet: retried by the pending loop
+
+                if (!_screenFallbackNoted)
+                {
+                    _screenFallbackNoted = true;
+                    Logger.LogWarning("Announcement", "Screen text entity could not be created for an alive player; the HUD banner is used instead.");
+                }
+            }
+            else if (!_screenFallbackNoted)
             {
                 _screenFallbackNoted = true;
-                Logger.LogWarning("Announcement", src.utils.ScreenText.Available
-                    ? "Screen text could not be shown (player not alive yet or entity creation failed); the HUD banner is used instead."
-                    : "Screen text is unavailable because entity spawning is blocked (EntitySpawnSafety: add the CS2 version to VerifiedGameVersions or set Mode to \"Off\"); the HUD banner is used instead.");
+                Logger.LogWarning("Announcement", "Screen text is unavailable because entity spawning is blocked (EntitySpawnSafety.AllowScreenText=false); the HUD banner is used instead.");
             }
         }
 
         // Round-start alert in the centre box: only this banner, lifted towards the top of the screen, for a
         // few seconds; the skill HUD takes the box back afterwards.
         src.utils.SkillUtils.ShowCenterNotice(player, bannerHtml, plainText, seconds, exclusive: retakes.SiteBannerHidesSkill);
+        return true;
     }
 
     private static System.Drawing.Color ParseColor(string hex, System.Drawing.Color fallback)
@@ -173,6 +229,9 @@ public class AnnouncementService
             Logger.LogInfo("Announcement", "EnableBombsiteAnnouncementCenter=false in retakes.json is ignored; the banner follows SiteBannerStyle in config.json.");
         }
 
+        if (showBanner && !onlyCenter)
+            StartPending(bombsite);
+
         foreach (var player in Utilities.GetPlayers())
         {
             // The Ts spawn on the site; the call is for the CTs (and spectators) unless configured otherwise.
@@ -186,9 +245,9 @@ public class AnnouncementService
                 if (chatLine)
                     player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
 
-                if (showBanner)
+                if (showBanner && ShowSiteBanner(player, bombsite, centerHtml, centerText))
                 {
-                    ShowSiteBanner(player, bombsite, centerHtml, centerText);
+                    _pendingShown.Add(player.Index);
                 }
 
                 if (voice && !_hasMutedVoices.Contains(player))

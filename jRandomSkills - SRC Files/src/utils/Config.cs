@@ -425,6 +425,9 @@ namespace src.utils
             // CounterStrikeSharp 1.0.375 targets 1.41.8.2.
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> VerifiedGameVersions { get; set; } = ["1.41.8.2"];
+            // true: the top-of-screen site text (one point_worldtext per player, GameHUD style) is still created while
+            // spawning is blocked; set false if the server crashes right after round start with it on.
+            public bool AllowScreenText { get; set; } = true;
             // Skills that need to spawn entities; they are left out of the draw while spawning is blocked.
             [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> Skills { get; set; } =

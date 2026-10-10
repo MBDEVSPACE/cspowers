@@ -41,7 +41,9 @@ namespace src.utils
         private static readonly ConcurrentDictionary<uint, Entry> entries = [];
         private static bool viewModelNoteShown;
 
-        public static bool Available => !EntitySafety.SpawningBlocked;
+        // The text entity is the one spawn allowed through the EntitySpawnSafety block when AllowScreenText is on:
+        // a point_worldtext parented to the pawn is what GameHUD/InfoTop create on every CS2 build.
+        public static bool Available => !EntitySafety.SpawningBlocked || Config.LoadedConfig.EntitySpawnSafety.AllowScreenText;
 
         public static Method ParseMethod(string? name)
         {

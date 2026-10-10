@@ -29,6 +29,9 @@ namespace src.utils
             if (!SpawningBlocked)
                 Instance.Logger.LogInformation("[TiredPowers] Entity spawning enabled (CS2 {Version}, CounterStrikeSharp {Css}).", GameVersion ?? "unknown", CounterStrikeSharpVersion ?? "unknown");
 
+            if (SpawningBlocked && settings.AllowScreenText)
+                Instance.Logger.LogInformation("[TiredPowers] Screen text (site call at the top of the screen) stays on while spawning is blocked (EntitySpawnSafety.AllowScreenText=true).");
+
             if (SpawningBlocked)
                 Instance.Logger.LogWarning(
                     "[TiredPowers] Entity spawning is disabled (EntitySpawnSafety.Mode={Mode}, CS2 {Version}, CounterStrikeSharp {Css}, verified CS2 versions: {Verified}). " +
