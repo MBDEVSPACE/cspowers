@@ -31,34 +31,10 @@ namespace src.player.skills
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
         }
 
-        // These movement cvars are FCVAR_REPLICATED: a client that holds a value different from the server's
-        // predicts every landing differently from what the server does and rubber-bands ("flying"/strafing
-        // jitter on each jump). They are therefore NEVER replicated for the hop; the hop is server-side only.
-        // The reset below puts a client back on the server's values in case an older build left it changed.
-        private static readonly (string Name, string Default)[] MovementCvars =
-        [
-            ("sv_autobunnyhopping", "0"),
-            ("sv_enablebunnyhopping", "0"),
-            ("sv_staminajumpcost", "0.080000"),
-            ("sv_staminalandcost", "0.050000"),
-        ];
-
-        public static void ResetClientCvars(CCSPlayerController player)
-        {
-            if (player == null || !player.IsValid || player.IsBot) return;
-
-            foreach (var (name, fallback) in MovementCvars)
-            {
-                string serverValue = SkillUtils.CvarString(name, fallback);
-                if (string.IsNullOrEmpty(serverValue)) serverValue = fallback;
-                try { player.ReplicateConVar(name, serverValue); } catch { }
-            }
-        }
-
-        public static void DisableSkill(CCSPlayerController player)
-        {
-            ResetClientCvars(player);
-        }
+        // Nothing is ever replicated to the client for this skill. sv_autobunnyhopping / sv_enablebunnyhopping /
+        // the stamina cvars drive client-side movement prediction; any value the client holds that differs
+        // from what the server simulates makes every jump mispredict. The hop is server-side only.
+        public static void DisableSkill(CCSPlayerController player) { }
 
         public static void OnTick()
         {
