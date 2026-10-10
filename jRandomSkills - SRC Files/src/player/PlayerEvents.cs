@@ -636,14 +636,15 @@ namespace src.player
             ReportLaunches();
         }
 
-        // A vertical speed jump well above a normal jump (about 302 u/s) in one tick is never the player's own
-        // movement; one console line names the skills active at that moment so the source can be found.
+        // A vertical speed rise well above the server's jump impulse in one tick is never the player's own
+        // movement; one console line names the skills active at that moment plus the server's jump cvars.
         private static readonly Dictionary<uint, (float Vz, bool OnGround, DateTime LastLog)> launchTrack = [];
 
         private static void ReportLaunches()
         {
             try
             {
+                float impulse = SkillUtils.CvarValue("sv_jump_impulse", 301.99f);
                 foreach (var player in PlayerManager.GetTickPlayers())
                 {
                     if (player == null || !player.IsValid || player.IsBot) continue;
@@ -654,18 +655,21 @@ namespace src.player
                     bool onGround = (pawn.Flags & (uint)PlayerFlags.FL_ONGROUND) != 0;
                     launchTrack.TryGetValue(player.Index, out var prev);
 
-                    if (prev.Vz != 0 || prev.OnGround)
+                    // Rise above what one jump can give (a landing + jump in the same tick starts from 0, not from
+                    // the fall speed, so the fall part is not counted).
+                    float from = prev.OnGround || prev.Vz < 0 ? Math.Max(prev.Vz, 0f) : prev.Vz;
+                    float rise = vz - from;
+                    if (rise > impulse + 40f && (DateTime.Now - prev.LastLog).TotalSeconds >= 3)
                     {
-                        float delta = vz - prev.Vz;
-                        if (delta > 330f && (DateTime.Now - prev.LastLog).TotalSeconds >= 3)
-                        {
-                            prev.LastLog = DateTime.Now;
-                            var info = PlayerManager.GetPlayerByIndex(player.Index);
-                            string own = info == null ? "-" : string.Join("+", info.AllSkills().Where(k => k != Skills.None));
-                            string active = string.Join(",", _activeSkillsList.Where(k => k != Skills.None));
-                            int humans = PlayerManager.GetTickPlayers().Count(p => p != null && p.IsValid && !p.IsBot);
-                            Server.PrintToConsole($"[TiredPowers] LAUNCH {player.PlayerName}: vz {prev.Vz:F0} -> {vz:F0} (+{delta:F0}) wasOnGround={prev.OnGround} gravity={pawn.ActualGravityScale:F2} velMod={pawn.VelocityModifier:F2} | own skills: {own} | skills active this round: {active} | {humans} humans");
-                        }
+                        prev.LastLog = DateTime.Now;
+                        var info = PlayerManager.GetPlayerByIndex(player.Index);
+                        string own = info == null ? "-" : string.Join("+", info.AllSkills().Where(k => k != Skills.None));
+                        string active = string.Join(",", _activeSkillsList.Where(k => k != Skills.None));
+                        int humans = PlayerManager.GetTickPlayers().Count(p => p != null && p.IsValid && !p.IsBot);
+                        float speed2D = MathF.Sqrt(pawn.AbsVelocity.X * pawn.AbsVelocity.X + pawn.AbsVelocity.Y * pawn.AbsVelocity.Y);
+                        bool jump = (player.Buttons & PlayerButtons.Jump) != 0;
+                        string cvars = $"sv_jump_impulse={impulse:F0} sv_enablebunnyhopping={SkillUtils.CvarString("sv_enablebunnyhopping", "?")} sv_autobunnyhopping={SkillUtils.CvarString("sv_autobunnyhopping", "?")} sv_staminajumpcost={SkillUtils.CvarString("sv_staminajumpcost", "?")} sv_gravity={SkillUtils.CvarString("sv_gravity", "?")}";
+                        Server.PrintToConsole($"[TiredPowers] LAUNCH {player.PlayerName}: vz {prev.Vz:F0} -> {vz:F0} (rise {rise:F0}, more than one jump) wasOnGround={prev.OnGround} jumpHeld={jump} speed2D={speed2D:F0} gravity={pawn.ActualGravityScale:F2} velMod={pawn.VelocityModifier:F2} moveType={pawn.MoveType} | own skills: {own} | skills active this round: {active} | {humans} humans | {cvars}");
                     }
 
                     launchTrack[player.Index] = (vz, onGround, prev.LastLog);
