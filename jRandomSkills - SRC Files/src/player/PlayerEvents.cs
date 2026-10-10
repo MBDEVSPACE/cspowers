@@ -832,6 +832,11 @@ namespace src.player
             // Movement cvars back on the server's values: a client left with bhop values predicts jumps wrongly.
             skills.BunnyHop.ResetClientCvars(player);
 
+            // Gravity back to normal: a lowered scale (Astronaut, Gravity Decoy) that outlived its skill made every
+            // jump go further for the rest of the map.
+            if (pawn.ActualGravityScale != 1f)
+                pawn.ActualGravityScale = 1f;
+
             if (SkillsInfo.GetValue<bool>(Skills.Magnifier, "active") && player.DesiredFOV == SkillsInfo.GetValue<uint>(Skills.Magnifier, "customFOV"))
             {
                 player.DesiredFOV = playersCustomFOV.TryGetValue(player.Index, out uint fov) ? fov : 0;
