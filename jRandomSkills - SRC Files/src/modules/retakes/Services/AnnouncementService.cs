@@ -107,7 +107,10 @@ public class AnnouncementService
         var retakes = src.utils.Config.LoadedConfig.Modules.Retakes;
         string image = (bombsite == Bombsite.A ? retakes.SiteImageA : retakes.SiteImageB)?.Trim() ?? "";
 
-        if (image.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || image.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        // A picture only in the explicit "Html" style: it must be re-sent every tick to stay up (HUD traffic).
+        // The "Screen" style falls back to plain text at the top of the HUD box, re-sent a few ticks apart.
+        bool htmlStyle = retakes.SiteBannerStyle.Trim().Equals("Html", StringComparison.OrdinalIgnoreCase);
+        if (htmlStyle && (image.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || image.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
             return $"<img src='{image.Replace("'", "%27")}'/>";
 
         string siteColor = bombsite == Bombsite.A ? "#FF5050" : "#50A0FF";
@@ -149,6 +152,9 @@ public class AnnouncementService
         var centerHtml = BannerHtml(bombsite);
 
         bool ctOnly = src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallCtOnly;
+        bool chatLine = src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallChat;
+        // The agent voice line plays only when both retakes.json and config.json allow it.
+        bool voice = _voicesEnabled && src.utils.Config.LoadedConfig.Modules.Retakes.SiteCallVoice;
 
         // The standalone RetakesSiteAnnounce plugin draws the on-screen call itself (it listens to the same
         // bombsite event); with it loaded, or with SiteBannerStyle "Off", only the chat line and the voice stay.
@@ -177,14 +183,15 @@ public class AnnouncementService
 
             if (!onlyCenter)
             {
-                player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
+                if (chatLine)
+                    player.PrintToChat($"{_plugin.Localizer["retakes.prefix"]} {announcementMessage}");
 
                 if (showBanner)
                 {
                     ShowSiteBanner(player, bombsite, centerHtml, centerText);
                 }
 
-                if (_voicesEnabled && !_hasMutedVoices.Contains(player))
+                if (voice && !_hasMutedVoices.Contains(player))
                 {
                     // A "play" sent in the same frame as the round restart is dropped by the client now and then;
                     // a moment later it always goes through.
@@ -209,6 +216,6 @@ public class AnnouncementService
             ShowSiteBanner(player, bombsite, centerHtml, centerText);
         }
 
-        Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT): CT only={ctOnly}, banner {bannerState}, voice={_voicesEnabled}");
+        Logger.LogInfo("Announcement", $"Announced bombsite {bombsite} ({numTerrorist}T vs {numCounterTerrorist}CT): CT only={ctOnly}, banner {bannerState}, chat={chatLine}, voice={voice}");
     }
 }

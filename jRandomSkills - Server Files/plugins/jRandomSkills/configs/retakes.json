@@ -34,7 +34,7 @@
     "ShouldPreventTeamChangesMidRound": true
   },
   "MapConfigSettings": {
-    "EnableBombsiteAnnouncementVoices": true,
+    "EnableBombsiteAnnouncementVoices": false,
     "EnableBombsiteAnnouncementCenter": true,
     "EnableFallbackBombsiteAnnouncement": true,
     "EnablePlantLocationAnnouncement": false

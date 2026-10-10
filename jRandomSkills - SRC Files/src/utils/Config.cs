@@ -545,10 +545,10 @@ namespace src.utils
             public string SiteImageA { get; set; } = "https://cdn.michael.cool/d/A.png";
             public string SiteImageB { get; set; } = "https://cdn.michael.cool/d/B.png";
             public float SiteBannerSeconds { get; set; } = 4f;
-            // "Screen": big "SITE A" / "SITE B" text drawn at the top of the screen on its own (not in the centre HUD
-            // slot, so it never touches the skill text and costs no HUD traffic). "Html": the centre HUD banner
-            // (needed for the SiteImage pictures). "Off": no banner (chat line and voice only). Screen falls back to
-            // Html when entity spawning is blocked. With the standalone RetakesSiteAnnounce plugin loaded the banner
+            // "Screen": big "SITE A" / "SITE B" text drawn at the top of the screen on its own (point_worldtext, as
+            // CS2-GameHUD / InfoTop draw it: no HUD traffic). When entity spawning is blocked the same text goes to
+            // the top of the centre HUD box instead (text only, re-sent a few ticks apart). "Html": the SiteImage
+            // picture in the centre HUD (re-sent every tick). "Off": no banner. With the standalone RetakesSiteAnnounce plugin loaded the banner
             // is off automatically, whatever this says.
             public string SiteBannerStyle { get; set; } = "Screen";
             // true: when the standalone RetakesSiteAnnounce plugin is loaded, leave the on-screen call to it.
@@ -556,6 +556,10 @@ namespace src.utils
             public bool DeferToStandaloneSiteAnnounce { get; set; } = true;
             // Who gets the site call (chat line, banner and voice): CTs are the ones retaking; Ts spawn on the site.
             public bool SiteCallCtOnly { get; set; } = true;
+            // The "Retake A: 1 Ts vs 2 CTs" chat line each round (off: the banner alone, no chat spam).
+            public bool SiteCallChat { get; set; } = false;
+            // The agent voice line ("bombsite A") each round; also needs EnableBombsiteAnnouncementVoices in retakes.json.
+            public bool SiteCallVoice { get; set; } = false;
             // Show the site banner a second time a few seconds after the bomb is planted (stock retakes behaviour).
             public bool RepeatSiteCallAfterPlant { get; set; } = false;
             // Screen text placement, CS2-GameHUD / InfoTop convention: X right, Y up, Z distance from the eyes.
