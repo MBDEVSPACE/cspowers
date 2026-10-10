@@ -829,6 +829,8 @@ namespace src.player
             Utilities.SetStateChanged(pawn, "CBasePlayerPawn", "m_iHideHUD");
 
             player.ReplicateConVar("sv_disable_radar", "0");
+            // Movement cvars back on the server's values: a client left with bhop values predicts jumps wrongly.
+            skills.BunnyHop.ResetClientCvars(player);
 
             if (SkillsInfo.GetValue<bool>(Skills.Magnifier, "active") && player.DesiredFOV == SkillsInfo.GetValue<uint>(Skills.Magnifier, "customFOV"))
             {

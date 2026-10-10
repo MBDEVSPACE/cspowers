@@ -295,6 +295,7 @@
     "VerifiedGameVersions": [
       "1.41.8.2"
     ],
+    "AllowScreenText": true,
     "Skills": [
       "C4Camouflage",
       "Chicken",

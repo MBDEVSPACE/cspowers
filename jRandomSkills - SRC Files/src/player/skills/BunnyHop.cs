@@ -31,36 +31,33 @@ namespace src.player.skills
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
         }
 
-        // The movement cvars an autobhop server would set. They are replicated to the holder's CLIENT only, so
-        // its prediction matches what the server does for them below (auto-jump on landing, no landing speed
-        // clamp, no stamina cost); without this the hop was only applied server-side and the client stuttered.
-        private static readonly (string Name, string Value)[] ClientCvars =
+        // These movement cvars are FCVAR_REPLICATED: a client that holds a value different from the server's
+        // predicts every landing differently from what the server does and rubber-bands ("flying"/strafing
+        // jitter on each jump). They are therefore NEVER replicated for the hop; the hop is server-side only.
+        // The reset below puts a client back on the server's values in case an older build left it changed.
+        private static readonly (string Name, string Default)[] MovementCvars =
         [
-            ("sv_autobunnyhopping", "1"),
-            ("sv_enablebunnyhopping", "1"),
-            ("sv_staminajumpcost", "0"),
-            ("sv_staminalandcost", "0"),
+            ("sv_autobunnyhopping", "0"),
+            ("sv_enablebunnyhopping", "0"),
+            ("sv_staminajumpcost", "0.080000"),
+            ("sv_staminalandcost", "0.050000"),
         ];
 
-        public static void EnableSkill(CCSPlayerController player)
+        public static void ResetClientCvars(CCSPlayerController player)
         {
             if (player == null || !player.IsValid || player.IsBot) return;
 
-            foreach (var (name, value) in ClientCvars)
-                try { player.ReplicateConVar(name, value); } catch { }
+            foreach (var (name, fallback) in MovementCvars)
+            {
+                string serverValue = SkillUtils.CvarString(name, fallback);
+                if (string.IsNullOrEmpty(serverValue)) serverValue = fallback;
+                try { player.ReplicateConVar(name, serverValue); } catch { }
+            }
         }
 
         public static void DisableSkill(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid || player.IsBot) return;
-
-            // Back to the server's own values.
-            foreach (var (name, _) in ClientCvars)
-            {
-                string serverValue = SkillUtils.CvarString(name, "");
-                if (!string.IsNullOrEmpty(serverValue))
-                    try { player.ReplicateConVar(name, serverValue); } catch { }
-            }
+            ResetClientCvars(player);
         }
 
         public static void OnTick()
