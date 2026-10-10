@@ -156,7 +156,7 @@
     "VerticalOffsetLines": 1,
     "NoticeLineColor": "#FFD700",
     "NoticeLiftLines": 4,
-    "HudResendTicks": 4
+    "HudResendTicks": 6
   },
   "ChatMessage": {
     "MaxWidth": 1280.0,
@@ -379,6 +379,8 @@
       "SiteBannerStyle": "Screen",
       "DeferToStandaloneSiteAnnounce": true,
       "SiteCallCtOnly": true,
+      "SiteCallChat": false,
+      "SiteCallVoice": false,
       "RepeatSiteCallAfterPlant": false,
       "ScreenBannerMethod": "Pawn",
       "ScreenBannerX": 0.0,

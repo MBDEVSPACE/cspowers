@@ -735,6 +735,8 @@ namespace src.player
                 var skillPlayer = PlayerManager.GetPlayerByIndex(player!.Index);
                 if (skillPlayer == null) return HookResult.Continue;
 
+                LogDisconnect(@event, player, skillPlayer);
+
                 DisableAllSkills(skillPlayer, player);
 
                 uint leavingIndex = player.Index;
@@ -753,6 +755,39 @@ namespace src.player
 
                 return HookResult.Continue;
             }
+        }
+
+        // One console line per human disconnect with what the plugin was pushing to that client: the centre-HTML
+        // HUD is the only thing it sends on a schedule, so a net overflow kick can be read against it.
+        private static void LogDisconnect(EventPlayerDisconnect @event, CCSPlayerController player, jSkill_PlayerInfo skillPlayer)
+        {
+            try
+            {
+                if (player.IsBot) return;
+
+                int reason = @event.Reason;
+                string reasonName = reason switch
+                {
+                    1 => "shutdown", 2 => "by user", 3 => "kicked", 4 => "lost", 5 => "OVERFLOW",
+                    6 => "steam logon", 7 => "steam auth", 23 => "timed out", 39 => "net overflow", _ => "code"
+                };
+
+                var cache = skillPlayer.HudCache;
+                int sends = (cache?.WindowSends ?? 0) + (cache?.PrevWindowSends ?? 0);
+                long bytes = (cache?.WindowBytes ?? 0) + (cache?.PrevWindowBytes ?? 0);
+                double seconds = cache == null ? 0 : Math.Clamp((Server.TickCount - cache.WindowStartTick) / 64.0 + (cache.PrevWindowSends > 0 ? 10 : 0), 0.1, 20);
+                bool image = cache?.Content?.Contains("<img", StringComparison.Ordinal) == true;
+
+                var rules = Instance?.GameRules;
+                string phase = rules == null ? "?" : rules.WarmupPeriod ? "warmup" : rules.FreezePeriod ? "freeze" : rules.GamePhase >= 5 ? "match end" : "live";
+                double sinceFreezeEnd = (DateTime.Now - freezeTimeEnd).TotalSeconds;
+                int humans = Utilities.GetPlayers().Count(p => p != null && p.IsValid && !p.IsBot && !p.IsHLTV);
+
+                string line = $"[TiredPowers] DISCONNECT {player.PlayerName} reason={reason} ({reasonName}) | HUD to this client: {sends} msgs, {bytes / 1024.0:F1} KB in last {seconds:F0} s ({sends / seconds:F1}/s), last msg {cache?.LastBytes ?? 0} B, image={image}, resend every {Config.LoadedConfig.HtmlHudCustomisation.HudResendTicks} ticks | {phase}, {sinceFreezeEnd:F0} s after freeze end, {humans} humans, skill={skillPlayer.Skill}";
+                Server.PrintToConsole(line);
+                PerfLog.Info(line);
+            }
+            catch { }
         }
 
         private static HookResult PlayerSpawned(EventPlayerSpawned @event, GameEventInfo info)
@@ -1027,6 +1062,7 @@ namespace src.player
                     if (Server.TickCount - cache.LastSentTick >= resendTicks)
                     {
                         cache.LastSentTick = Server.TickCount;
+                        cache.CountSend(cache.Content.Length, Server.TickCount);
                         player.PrintToCenterHtml(cache.Content);
                     }
                     return;
@@ -1103,6 +1139,7 @@ namespace src.player
                     cache.IsDescription = isDescription;
                     cache.Content = hudContent;
                     cache.LastSentTick = Server.TickCount;
+                    cache.CountSend(hudContent.Length, Server.TickCount);
                 }
 
                 player.PrintToCenterHtml(hudContent);

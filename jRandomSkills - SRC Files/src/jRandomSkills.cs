@@ -504,6 +504,22 @@ namespace src
         public int LastSentTick;
         public bool IsDescription;
         public string? Content;
+
+        // How much centre-HTML the plugin pushed to this player lately (for the disconnect diagnostic).
+        public int WindowStartTick = int.MinValue;
+        public int WindowSends, PrevWindowSends;
+        public long WindowBytes, PrevWindowBytes;
+        public int LastBytes;
+
+        public void CountSend(int bytes, int tick)
+        {
+            if (tick - WindowStartTick >= 640) // 10 s windows
+            {
+                PrevWindowSends = WindowSends; PrevWindowBytes = WindowBytes;
+                WindowSends = 0; WindowBytes = 0; WindowStartTick = tick;
+            }
+            WindowSends++; WindowBytes += bytes; LastBytes = bytes;
+        }
     }
 
     public class jSkill_SkillInfo(Skills skill, string color, bool display)
