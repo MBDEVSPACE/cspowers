@@ -641,7 +641,7 @@ namespace src.player
         private static readonly Dictionary<uint, (float Vz, bool OnGround, DateTime LastLog)> launchTrack = [];
         // Horizontal speed in the air: the game adds at most sv_airaccelerate * 30 / 64 (about 6 u/s) per tick,
         // so a bigger gain while airborne is an outside push.
-        private static readonly Dictionary<uint, (float Speed2D, int Boosts, float Gained, DateTime LastLog)> airTrack = [];
+        private static readonly Dictionary<uint, (float Speed2D, int Boosts, float Gained, DateTime LastLog, float Vx, float Vy)> airTrack = [];
 
         private static void ReportLaunches()
         {
@@ -693,12 +693,35 @@ namespace src.player
                                 string own = info == null ? "-" : string.Join("+", info.AllSkills().Where(k => k != Skills.None));
                                 string active = string.Join(",", _activeSkillsList.Where(k => k != Skills.None));
                                 int humans = PlayerManager.GetTickPlayers().Count(p => p != null && p.IsValid && !p.IsBot);
-                                Server.PrintToConsole($"[TiredPowers] AIRBOOST {player.PlayerName}: speed {air.Speed2D:F0} -> {horizontal:F0} (+{gain:F0} in one tick while airborne; {air.Boosts} such ticks, +{air.Gained:F0} total since last line) vz={vz:F0} velMod={pawn.VelocityModifier:F2} gravity={pawn.ActualGravityScale:F2} | own skills: {own} | skills active this round: {active} | {humans} humans");
+                                // Where the push came from: its direction against the view, and what was close.
+                                float dvx = pawn.AbsVelocity.X - air.Vx, dvy = pawn.AbsVelocity.Y - air.Vy;
+                                float pushYaw = MathF.Atan2(dvy, dvx) * 180f / MathF.PI;
+                                float relYaw = pushYaw - pawn.V_angle.Y;
+                                while (relYaw > 180) relYaw -= 360; while (relYaw < -180) relYaw += 360;
+                                string nearest = "-";
+                                if (pawn.AbsOrigin != null)
+                                {
+                                    float best = float.MaxValue; string who = "";
+                                    foreach (var other in PlayerManager.GetTickPlayers())
+                                    {
+                                        if (other == null || !other.IsValid || other.Index == player.Index) continue;
+                                        var op = other.PlayerPawn.Value;
+                                        if (op == null || !op.IsValid || op.AbsOrigin == null || op.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                                        float d = (op.AbsOrigin - pawn.AbsOrigin).Length();
+                                        if (d < best) { best = d; who = other.PlayerName; }
+                                    }
+                                    if (who.Length > 0) nearest = $"{who} at {best:F0}u";
+                                }
+                                var ground = pawn.GroundEntity?.Value;
+                                string touching = ground != null && ground.IsValid ? ground.DesignerName : "nothing";
+                                string pos = pawn.AbsOrigin == null ? "?" : $"{pawn.AbsOrigin.X:F0} {pawn.AbsOrigin.Y:F0} {pawn.AbsOrigin.Z:F0}";
+                                Server.PrintToConsole($"[TiredPowers] AIRBOOST {player.PlayerName}: speed {air.Speed2D:F0} -> {horizontal:F0} (+{gain:F0} in one tick while airborne; {air.Boosts} such ticks, +{air.Gained:F0} total since last line) push dir {relYaw:F0} deg from view (0=forward, 180=from behind) vz={vz:F0} velMod={pawn.VelocityModifier:F2} gravity={pawn.ActualGravityScale:F2} touching={touching} nearest={nearest} pos={pos} map={Server.MapName} | own skills: {own} | skills active this round: {active} | {humans} humans");
                                 air.Boosts = 0; air.Gained = 0;
                             }
                         }
                     }
                     air.Speed2D = horizontal;
+                    air.Vx = pawn.AbsVelocity.X; air.Vy = pawn.AbsVelocity.Y;
                     airTrack[player.Index] = air;
                 }
             }
