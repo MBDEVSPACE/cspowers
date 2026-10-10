@@ -656,7 +656,7 @@ namespace src.utils
             public int NoticeLiftLines { get; set; } = 4;
             // Ticks between two sends of an unchanged HUD (1 = every tick like the original plugin, 6 = the most
             // before the centre text starts to blink). Fewer sends = less network traffic per player.
-            public int HudResendTicks { get; set; } = 4;
+            public int HudResendTicks { get; set; } = 6;
         }
 
         public class LanguageSystem
