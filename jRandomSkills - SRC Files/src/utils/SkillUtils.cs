@@ -498,6 +498,51 @@ namespace src.utils
             HEGrenadeProjectile_CreateFunc.Value?.Invoke(pos.Handle, angle.Handle, vel.Handle, vel.Handle, IntPtr.Zero, 44, teamNum);
         }
 
+        // false after a CS2 update broke the gamedata signature: the HE call above then silently does nothing.
+        public static bool HEGrenadeAvailable => HEGrenadeProjectile_CreateFunc.Value != null;
+
+        private static bool _explosionFallbackNoted;
+
+        // Blast without any game signature: an env_explosion owned by the player, so the damage is credited to
+        // them and the server's friendly-fire rules apply. Used when the HE grenade signature is unavailable.
+        public static bool CreateExplosion(Vector pos, float damage, float radius, CCSPlayerPawn? owner, string? globalName = null)
+        {
+            if (EntitySafety.SpawningBlocked) return false;
+            try
+            {
+                var explosion = Utilities.CreateEntityByName<CEnvExplosion>("env_explosion");
+                if (explosion == null || !explosion.IsValid) return false;
+
+                explosion.Magnitude = (int)Math.Max(1f, damage);
+                explosion.RadiusOverride = (int)Math.Max(1f, radius);
+                if (owner != null && owner.IsValid) explosion.OwnerEntity.Raw = owner.EntityHandle.Raw;
+                if (!string.IsNullOrEmpty(globalName)) explosion.Globalname = globalName;
+
+                explosion.Teleport(pos, null, null);
+                explosion.DispatchSpawn();
+                explosion.AcceptInput("Explode");
+
+                if (!_explosionFallbackNoted)
+                {
+                    _explosionFallbackNoted = true;
+                    Server.PrintToConsole("[TiredPowers] HE grenade signature unavailable on this CS2 build: explosions use env_explosion instead.");
+                }
+
+                var index = explosion.Index;
+                jRandomSkills.Instance.AddTimer(1f, () =>
+                {
+                    var e = Utilities.GetEntityFromIndex<CEnvExplosion>((int)index);
+                    if (e != null && e.IsValid) e.Remove();
+                });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[TiredPowers] env_explosion failed: {ex.Message}");
+                return false;
+            }
+        }
+
         public static void CreateSmokeGrenadeProjectile(Vector pos, QAngle angle, Vector vel, int teamNum)
         {
             SmokeGrenadeProjectile_CreateFunc.Value?.Invoke(pos.Handle, angle.Handle, vel.Handle, vel.Handle, IntPtr.Zero, 45, teamNum);
