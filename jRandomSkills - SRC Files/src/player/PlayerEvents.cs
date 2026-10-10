@@ -642,6 +642,8 @@ namespace src.player
         // Horizontal speed in the air: the game adds at most sv_airaccelerate * 30 / 64 (about 6 u/s) per tick,
         // so a bigger gain while airborne is an outside push.
         private static readonly Dictionary<uint, (float Speed2D, int Boosts, float Gained, DateTime LastLog, float Vx, float Vy)> airTrack = [];
+        // After a reported boost: where the pawn was and what speed was reported, to measure the real travel.
+        private static readonly Dictionary<uint, (int Tick, float X, float Y, float Reported)> airCheck = [];
 
         private static void ReportLaunches()
         {
@@ -715,14 +717,29 @@ namespace src.player
                                 var ground = pawn.GroundEntity?.Value;
                                 string touching = ground != null && ground.IsValid ? ground.DesignerName : "nothing";
                                 string pos = pawn.AbsOrigin == null ? "?" : $"{pawn.AbsOrigin.X:F0} {pawn.AbsOrigin.Y:F0} {pawn.AbsOrigin.Z:F0}";
-                                Server.PrintToConsole($"[TiredPowers] AIRBOOST {player.PlayerName}: speed {air.Speed2D:F0} -> {horizontal:F0} (+{gain:F0} in one tick while airborne; {air.Boosts} such ticks, +{air.Gained:F0} total since last line) push dir {relYaw:F0} deg from view (0=forward, 180=from behind) vz={vz:F0} velMod={pawn.VelocityModifier:F2} gravity={pawn.ActualGravityScale:F2} touching={touching} nearest={nearest} pos={pos} map={Server.MapName} | own skills: {own} | skills active this round: {active} | {humans} humans");
+                                // m_vecVelocity is what the movement code holds; m_vecAbsVelocity is derived. A gap between
+                                // the two means the reported number is an artifact, not a real speed.
+                                float moveSpeed = pawn.Velocity == null ? -1 : MathF.Sqrt(pawn.Velocity.X * pawn.Velocity.X + pawn.Velocity.Y * pawn.Velocity.Y);
+                                Server.PrintToConsole($"[TiredPowers] AIRBOOST {player.PlayerName}: abs speed {air.Speed2D:F0} -> {horizontal:F0} (+{gain:F0} in one tick while airborne; {air.Boosts} such ticks, +{air.Gained:F0} total since last line) movement velocity now {moveSpeed:F0} push dir {relYaw:F0} deg from view (0=forward, 180=from behind) vz={vz:F0} velMod={pawn.VelocityModifier:F2} gravity={pawn.ActualGravityScale:F2} touching={touching} nearest={nearest} pos={pos} map={Server.MapName} | own skills: {own} | skills active this round: {active} | {humans} humans");
                                 air.Boosts = 0; air.Gained = 0;
+                                if (pawn.AbsOrigin != null)
+                                    airCheck[player.Index] = (Server.TickCount, pawn.AbsOrigin.X, pawn.AbsOrigin.Y, horizontal);
                             }
                         }
                     }
                     air.Speed2D = horizontal;
                     air.Vx = pawn.AbsVelocity.X; air.Vy = pawn.AbsVelocity.Y;
                     airTrack[player.Index] = air;
+
+                    // Eight ticks after a reported boost: how far did the pawn really move?
+                    if (airCheck.TryGetValue(player.Index, out var chk) && Server.TickCount - chk.Tick >= 8 && pawn.AbsOrigin != null)
+                    {
+                        airCheck.Remove(player.Index);
+                        float dx = pawn.AbsOrigin.X - chk.X, dy = pawn.AbsOrigin.Y - chk.Y;
+                        float moved = MathF.Sqrt(dx * dx + dy * dy);
+                        float real = moved / ((Server.TickCount - chk.Tick) / 64f);
+                        Server.PrintToConsole($"[TiredPowers] AIRBOOST CHECK {player.PlayerName}: moved {moved:F0}u in {Server.TickCount - chk.Tick} ticks = {real:F0} u/s real travel (reported {chk.Reported:F0} u/s at the boost, abs now {horizontal:F0}) => {(real > chk.Reported * 0.8f ? "REAL boost" : "reporting artifact, no real boost")}");
+                    }
                 }
             }
             catch { }
