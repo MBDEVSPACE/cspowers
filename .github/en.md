@@ -73,13 +73,14 @@ Every skill has a `Rarity` in `configs/skillsInfo.json` (`Common`, `Uncommon`, `
 ## 🧩 Skill combos
 Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about one round in ten; `0` leaves combos to Rage only) of winning a second skill, up to `Combos.SkillsPerPlayer` skills in total (default `2`; set the chance to `1` for a combo every round or `SkillsPerPlayer` to `1` for the classic game). The first skill comes from the normal draw, the extra one is added from the pool so that nothing clashes: a skill is never paired with itself, with a skill in `SoloSkills` (skills that copy or replace the whole skill, plus Rage which is a combo itself), with a skill from the same `ClashGroups` entry (speed boosts, flight/jump, invisibility, cameras, revives, decoys, smokes, damage multipliers, …), with a second skill that opens a target menu, or, unless `AllowMultipleUseKeySkills` is `true`, with a second skill fired by the use key. The HUD lists every held skill; the chat announces each extra one. Rage always comes as Wallhack + Aimbot.
 
-## ✨ Current Skills (177)
+## ✨ Current Skills (183)
 <details>
 <summary>The table below lists all available skills in the game, along with their descriptions.</summary>
 
 | Name              | Description                                                                                        | Cooldown / Range |
 | ----------------- | -------------------------------------------------------------------------------------------------- | ---------------- |
 | Adrenaline        | Each kill restores 25 health and gives you a burst of speed for 5 seconds                          | 5 s              |
+| Air Bombs         | Click [css_useSkill] for a bird's-eye view: WASD flies the camera, left click drops a smoke, HE or molotov under it | 3 bombs / 25 s   |
 | Aimbot            | Every bullet you hit counts as a headshot                                                          | -                |
 | Aim Lock          | Click [css_useSkill] to lock your aim on the nearest enemy                                         | 20 s             |
 | Anomaly           | Click [css_useSkill] to rewind a few seconds back in time                                          | 15 s             |
@@ -115,6 +116,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Defuse Shield     | You take 50% less damage while defusing the bomb                                                   | 0.5x             |
 | Demon Eye         | You deal damage to every enemy you are looking at                                                  | 2 s              |
 | Disarmament       | You have a random chance to make an enemy drop their weapon on hit                                 | (20 - 35)%       |
+| Dazzle            | Every bullet that hits an enemy blinds them for a moment                                           | -                |
 | Dash              | Perform a second jump to dash                                                                      | -                |
 | Dracula           | Hitting an enemy restores health equal to a percentage of the damage dealt                         | -                |
 | Duplicator        | Choose a player to copy their skill                                                                | -                |
@@ -132,8 +134,8 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Fire Rain         | Throw a decoy to call down a rain of Molotovs                                                      | -                |
 | Flash             | Random player speed at the beginning of the round                                                  | (1.2 - 3.0)x     |
 | Flashlight        | Click [css_useSkill] to turn the flashlight on or off. Its light can blind enemies                 | 2 s              |
+| Forgot My Controls| Choose an enemy: their movement keys are reversed for the round or until you die                  | -                |
 | Fortnite          | Click [css_useSkill] to create a destructible barricade                                            | 2 s              |
-| Fragile Bomb      | Shooting the bomb damages it                                                                       | -                |
 | Friendly Fire     | Shooting teammates heals them                                                                      | -                |
 | Freezing Decoy    | Your decoy freezes all nearby players                                                              | -                |
 | Gambler           | Select a skill from the list provided                                                              | -                |
@@ -147,7 +149,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Grapple Hook      | Press [css_useSkill] to fire a hook at the point you're aiming at and pull yourself there          | 10 s             |
 | Gravity Decoy     | Your decoy changes the gravity of everyone nearby                                                  | 0.5x             |
 | Grenadier         | You have infinite HE grenades                                                                      | -                |
-| Ground Slam       | Crouch while in the air to slam down, knocking back and hurting enemies around you                 | 25 HP / 6 s      |
+| Ground Slam       | Click [css_useSkill] to leap at the nearest enemy you can see and slam down; crouch in the air to slam on the spot | 25 HP / 6 s      |
 | Guided Bullet     | [Admin test] Click [css_useSkill] for an AWP; every shot becomes a bullet you steer with the mouse from a camera | 150 HP / 4 s     |
 | Headhunter        | Headshot kills restore you to full health and armor                                                | -                |
 | Healing Chicken   | Your chickens heal you while you are nearby                                                        | 1 s = 5 HP       |
@@ -223,9 +225,11 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Sapper            | You can plant and defuse bombs faster                                                              | -                |
 | Scavenger         | Each kill refills your guns' ammo and may give you a grenade                                       | -                |
 | Second Chance     | After death, you get back up where you fell with the same amount of health                         | -                |
+| Second Sight      | Whoever shoots you is outlined through walls for 5 seconds, for your eyes only                     | 5 s              |
 | Shade             | You teleport behind the back of a hit enemy                                                        | -                |
 | Short Fuse        | The bomb explodes much faster                                                                      | -                |
 | Silent            | Your footsteps and jumps are silent to other players                                               | -                |
+| Sixth Sense       | I see dead people: the hit that should kill you leaves you as a half-transparent ghost with 175 HP for 7 seconds | 7 s / 175 HP     |
 | Smoke Jumper      | Throw a smoke grenade to teleport to where it lands                                                | 2 smokes         |
 | Smoker            | Your smoke grenades never run out                                                                  | -                |
 | Sniper Elite      | Click [css_useSkill] to swap your current weapon for an AWP                                        | 0 s              |
@@ -236,6 +240,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Switcheroo        | Aim at an enemy and click [css_useSkill] to swap places with them                                  | 20 s             |
 | Take Ammo         | Click [css_useSkill] to take the active weapon's magazine from a random enemy                      | -                |
 | Team Teleport     | Press [css_useSkill] to teleport to the teammate you're looking at.                                | 15 s             |
+| Super Jump        | Click [css_useSkill] on the ground for a huge jump; the landing never hurts                       | 6 s              |
 | Teleporter        | You swap places with the hit enemy                                                                 | -                |
 | Taxman            | Choose a player to swap money with                                                                 | -                |
 | Thief             | You can steal a skill from a chosen player                                                         | -                |
@@ -245,6 +250,7 @@ Each round a player has a `Combos.ExtraSkillChance` chance (default `0.1`, about
 | Thunder God       | Your decoys strike like lightning: every enemy near a landed decoy gets tased                      | 250 u / 2 decoys |
 | Toxic Smoke       | Your smoke grenades deal damage                                                                    | -                |
 | Tracker           | Choose a player who will leave a trail behind them                                                 | -                |
+| Tremor            | Click [css_useSkill] to shake the ground: enemies nearby are slowed to a crawl for a few seconds   | 20 s             |
 | Tripwire          | Click [css_useSkill] to string a wire between two walls. Enemies who touch it appear on your radar | 20 s             |
 | True Armor        | Part of the damage you take is paid by your armor instead of your health                           | 0.33x            |
 | Voodoo            | The enemy you mark also takes part of the damage you take                                          | 0.5x             |

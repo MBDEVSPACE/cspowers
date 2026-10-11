@@ -1,9 +1,7 @@
 ﻿{
   "ConfigName": "Default",
   "PluginName": "TiredPowers",
-  "AdminOnlySkills": [
-    "GuidedBullet"
-  ],
+  "AdminOnlySkills": [],
   "AutoAssignTeamOnJoin": true,
   "SkipWarmup": true,
   "SkillsUsableInFreezeTime": true,
@@ -297,6 +295,8 @@
     ],
     "AllowScreenText": true,
     "Skills": [
+      "AirBombs",
+      "SecondSight",
       "C4Camouflage",
       "Chicken",
       "Cypher",
@@ -347,7 +347,7 @@
       [ "Dash", "Pilot", "BunnyHop", "PawelJumper", "Astronaut", "Noclip", "Grapple", "Blink", "GroundSlam" ],
       [ "Ghost", "Ninja", "C4Camouflage", "Impostor", "Chicken", "Dwarf", "Illusionist" ],
       [ "Cypher", "FalconEye", "ThirdEye", "Spectator", "Iana" ],
-      [ "GodMode", "Jester", "SecondLife", "Phoenix", "ReZombie" ],
+      [ "GodMode", "Jester", "SecondLife", "Phoenix", "ReZombie", "SixthSense" ],
       [ "AntyHead", "OnlyHead" ],
       [ "Anomaly", "Rewind", "TimeLord" ],
       [ "Glue", "HomingNades", "Weightless" ],
@@ -377,7 +377,7 @@
       "SiteImageA": "https://cdn.michael.cool/d/A.png",
       "SiteImageB": "https://cdn.michael.cool/d/B.png",
       "SiteBannerSeconds": 4.0,
-      "SiteBannerStyle": "Screen",
+      "SiteBannerStyle": "Html",
       "DeferToStandaloneSiteAnnounce": true,
       "SiteCallCtOnly": true,
       "SiteCallChat": false,
