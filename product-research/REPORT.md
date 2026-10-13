@@ -27,10 +27,10 @@ Emergency-preparedness and reservist gear is the one category with press-documen
 #11 Kids car seat-back organizer with tablet holder / kick mat — starting capital ₪4,663 for a first test order of 30 units; base contribution ₪10/unit (13%).
 
 **Highest contribution margin**
-#1 OBD-II port lock / blocker — 35% base-case contribution margin (₪53 per unit on a ₪179 price). High per-unit profit comes with the heaviest compliance in the list (SII-approved power supply, Ministry of Communications approval for Bluetooth) and ₪12k of capital per 50 units — a scale-basket product, not a starter.
+#1 OBD-II port lock / blocker — 35% base-case contribution margin (₪53 per unit on a ₪179 price), driven by a ~$7 FOB part with no local price anchor. Highest absolute contribution per unit: #8 Desktop thermal shipping label printer (4x6, USB/Bluetooth, no ink) at ₪122 per unit. The label printer's high per-unit profit comes with the heaviest compliance in the list (SII-approved power supply, Ministry of Communications approval for Bluetooth) and about ₪12k of capital per 50 units — a scale-basket product, not a starter.
 
 **Safest entry-level product**
-#1 OBD-II port lock / blocker — no Israeli official standard expected, no battery, High evidence confidence, ₪5,053 to start.
+#3 Roll-up over-the-sink silicone-coated dish drying rack — skeptical reviewer verdict "Buy for testing", no Israeli official standard expected, no battery, low IP risk, High evidence confidence, ₪5,149 to start.
 
 **Major risks and market limitations**
 
